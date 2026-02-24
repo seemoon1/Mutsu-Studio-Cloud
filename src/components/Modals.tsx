@@ -134,20 +134,21 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                             <label className="block text-yellow-400 font-bold mb-1">Tavily Search Key (联网必备)</label>
                             <input type="password" value={keys.tavily} onChange={e => setKeys({ ...keys, tavily: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-yellow-500" placeholder="tvly-..." />
                         </div>
+                        <div className="pt-2 border-t border-gray-700 mt-2">
+                            <label className="block text-red-400 font-bold mb-1 flex items-center gap-1">
+                                <Lock size={12} /> Site Access Code (设置密码)
+                            </label>
+                            <input
+                                type="password"
+                                value={keys.accessCode}
+                                onChange={e => setKeys({ ...keys, accessCode: e.target.value })}
+                                className="w-full bg-[#111] border border-red-900/30 rounded p-2 outline-none focus:border-red-500 text-red-100"
+                                placeholder="输入站点访问密码..."
+                            />
+                        </div>
                     </div>
 
-                    <div className="pt-2 border-t border-gray-700 mt-2">
-                        <label className="block text-red-400 font-bold mb-1 flex items-center gap-1">
-                            <Lock size={12} /> Site Access Code (设置密码)
-                        </label>
-                        <input
-                            type="password"
-                            value={keys.accessCode}
-                            onChange={e => setKeys({ ...keys, accessCode: e.target.value })}
-                            className="w-full bg-[#111] border border-red-900/30 rounded p-2 outline-none focus:border-red-500 text-red-100"
-                            placeholder="输入站点访问密码..."
-                        />
-                    </div>
+
 
                     <div className="p-4 bg-[#252526] border-t border-gray-700 flex justify-end gap-2 shrink-0">
                         <button onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white text-xs">取消</button>
