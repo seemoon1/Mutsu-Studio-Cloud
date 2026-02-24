@@ -1,0 +1,6 @@
+{
+  "sakiko": {
+    "default": "/tachie/sakiko_placeholder.png"
+  },
+  "note": "This is a placeholder. Please put images in /public/tachie and update this file."
+}

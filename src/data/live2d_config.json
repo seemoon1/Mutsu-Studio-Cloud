@@ -1,0 +1,8 @@
+{
+  "sakiko": {
+    "id": "sakiko",
+    "modelUrl": "",
+    "outfits": {},
+    "note": "This is a placeholder. Please put models in /public/live2d and run the python scanner."
+  }
+}
