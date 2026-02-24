@@ -117,21 +117,15 @@ export const MODEL_DATA: ModelGroup[] = [
   { 
     groupName: "Gemini (Google)", 
     models: [
+      { id: "google/gemini-3.1-pro-preview", name: "Gemini 3.1 Pro Preview" },
       { id: "google/gemini-3-pro-preview", name: "Gemini 3 Pro Preview" },
       { id: "google/gemini-3-flash-preview", name: "Gemini 3.0 Flash Preview" },
       { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
       { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
       { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+      { id: "google/gemini-2.5-flash-lite-preview-09-2025", name: "Gemini 2.5 Flash Lite Preview-09-2025" },
     ]
   },
-  /* 
-  { 
-    groupName: "Image Gen (文生图)", 
-    models: [
-      { id: "google/imagen-3", name: "Imagen 3" },
-    ]
-  },
-  */
   { 
     groupName: "GPT (OpenAI)", 
     models: [
@@ -145,15 +139,20 @@ export const MODEL_DATA: ModelGroup[] = [
     groupName: "DeepSeek", 
     models: [
       { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2" },
-      { id: "deepseek/deepseek-chat-v3.1", name: "DeepSeek Chat v3.1" },
+      { id: "deepseek/deepseek-v3.2-exp", name: "DeepSeek v3.2-exp" },
+      { id: "deepseek/deepseek-chat-v3-0324", name: "DeepSeek v3-0324" },
+      { id: "deepseek/deepseek-chat-v3.1", name: "DeepSeek v3.1" },
+      { id: "deepseek/deepseek-chat", name: "DeepSeek v3" },
       { id: "deepseek/deepseek-r1", name: "DeepSeek R1" },
     ]
   },
   { 
     groupName: "Claude (Anthropic)", 
     models: [
-      { id: "anthropic/claude-sonnet-4.5", name: "Claude Sonnet 4.5" },
+      { id: "anthropic/claude-opus-4.6", name: "Claude Opus 4.6" },
+      { id: "anthropic/claude-sonnet-4.6", name: "Claude Sonnet 4.6" },
       { id: "anthropic/claude-opus-4.5", name: "Claude Opus 4.5" },
+      { id: "anthropic/claude-sonnet-4.5", name: "Claude Sonnet 4.5" },
       { id: "anthropic/claude-haiku-4.5", name: "Claude Haiku 4.5" },
       { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4" },
     ]

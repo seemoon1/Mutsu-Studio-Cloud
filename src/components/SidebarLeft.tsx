@@ -84,9 +84,9 @@ export const SidebarLeft = ({
     useTTS, toggleTTS,
     syncStatus, onManualSync,
     apiProvider, setApiProvider, memoryMode,
-    showApiModal, setShowApiModal, 
-    setDrawEngine, toggleVideoGen, 
-    useVideoGen, setVideoModel, 
+    showApiModal, setShowApiModal,
+    setDrawEngine, toggleVideoGen,
+    useVideoGen, setVideoModel,
     videoModel, drawEngine
 }: any) => {
     const importInputRef = useRef<HTMLInputElement>(null);
@@ -139,9 +139,17 @@ export const SidebarLeft = ({
                                 </div>
 
                                 {MODEL_DATA.filter((g: any) => {
-                                    if (apiProvider === 'google') return g.groupName.toLowerCase().includes("google");
-                                    if (apiProvider === 'deepseek') return g.groupName.toLowerCase().includes("deepseek");
-                                    return !g.groupName.toLowerCase().includes("google") && !g.groupName.toLowerCase().includes("deepseek");
+                                    const groupName = g.groupName.toLowerCase();
+                                    if (apiProvider === 'deepseek') {
+                                        return groupName.includes("deepseek");
+                                    }
+                                    if (apiProvider === 'google') {
+                                        return groupName.includes("google") || groupName.includes("gemini");
+                                    }
+                                    if (apiProvider === 'openrouter') {
+                                        return true;
+                                    }
+                                    return true;
                                 }).map((g: any) => (
                                     <div key={g.groupName} className="mb-1">
                                         <button onClick={() => setExpandedGroups((prev: any) => prev.includes(g.groupName) ? prev.filter((x: any) => x !== g.groupName) : [...prev, g.groupName])} className="w-full flex justify-between p-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 rounded">
