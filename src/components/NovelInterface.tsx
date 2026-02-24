@@ -574,9 +574,19 @@ export const NovelInterface = ({
                                             onChange={e => setSelectedModel(e.target.value)}
                                             className={`w-full ${theme.bg} border ${theme.border} rounded-lg px-3 py-2 text-xs ${theme.text} outline-none ${theme.focus} transition-all`}
                                         >
-                                            {MODEL_DATA.flatMap(g => g.models).map(m => (
-                                                <option key={m.id} value={m.id}>{m.name}</option>
-                                            ))}
+                                            {MODEL_DATA
+                                                .filter(g => {
+                                                    const groupName = g.groupName.toLowerCase();
+                                                    if (apiProvider === 'deepseek') return groupName.includes("deepseek");
+                                                    if (apiProvider === 'google') return groupName.includes("google") || groupName.includes("gemini");
+                                                    if (apiProvider === 'openrouter') return true;
+                                                    return true;
+                                                })
+                                                .flatMap(g => g.models)
+                                                .map(m => (
+                                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                                ))
+                                            }
                                         </select>
                                     </div>
 
