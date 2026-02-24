@@ -569,6 +569,33 @@ export const NovelInterface = ({
                                         <label className={`text-[10px] ${theme.text} opacity-50 font-black uppercase tracking-widest mb-2 block`}>
                                             AI Architect
                                         </label>
+                                        {/* Image Studio Toggle */}
+                                        <div className={`border rounded-xl overflow-hidden mb-3 ${theme.border} ${theme.inputBg}`}>
+                                            <button onClick={toggleImageGen} className={`w-full flex items-center justify-between p-3 text-xs font-bold ${useImageGen ? 'text-purple-500' : 'text-gray-400'}`}>
+                                                <div className="flex items-center gap-2"><Sparkles size={14} /><span>Image Studio</span></div>
+                                                <span className="text-[9px]">{useImageGen ? 'ON' : 'OFF'}</span>
+                                            </button>
+                                            {useImageGen && (
+                                                <div className="flex text-[9px] font-bold border-t border-gray-100/10 bg-black/10">
+                                                    <button onClick={() => setDrawEngine('volcengine')} className={`flex-1 py-1.5 transition-colors ${drawEngine === 'volcengine' ? 'text-purple-500 bg-white/10' : 'text-gray-500 hover:text-purple-400'}`}>Volc</button>
+                                                    <button onClick={() => setDrawEngine('openrouter')} className={`flex-1 py-1.5 transition-colors ${drawEngine === 'openrouter' ? 'text-purple-500 bg-white/10' : 'text-gray-500 hover:text-purple-400'}`}>Router</button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Video Studio Toggle */}
+                                        <div className={`border rounded-xl overflow-hidden mb-3 ${theme.border} ${theme.inputBg}`}>
+                                            <button onClick={toggleVideoGen} className={`w-full flex items-center justify-between p-3 text-xs font-bold ${useVideoGen ? 'text-indigo-500' : 'text-gray-400'}`}>
+                                                <div className="flex items-center gap-2"><Film size={14} /><span>Video Studio</span></div>
+                                                <span className="text-[9px]">{useVideoGen ? 'ON' : 'OFF'}</span>
+                                            </button>
+                                            {useVideoGen && (
+                                                <div className="flex text-[9px] font-bold border-t border-gray-100/10 bg-black/10">
+                                                    <button onClick={() => setVideoModel('hailuo')} className={`flex-1 py-1.5 transition-colors ${videoModel === 'hailuo' ? 'text-indigo-500 bg-white/10' : 'text-gray-500 hover:text-indigo-400'}`}>Hailuo</button>
+                                                    <button onClick={() => setVideoModel('doubao')} className={`flex-1 py-1.5 transition-colors ${videoModel === 'doubao' ? 'text-indigo-500 bg-white/10' : 'text-gray-500 hover:text-indigo-400'}`}>Doubao</button>
+                                                </div>
+                                            )}
+                                        </div>
                                         <select
                                             value={selectedModel}
                                             onChange={e => setSelectedModel(e.target.value)}
@@ -625,32 +652,6 @@ export const NovelInterface = ({
                                             )
                                         })}
                                     </div>
-                                </div>
-
-                                <div className="border rounded-lg overflow-hidden transition-all bg-white border-gray-200">
-                                    <button onClick={toggleImageGen} className={`w-full flex items-center justify-between px-3 py-2 text-xs font-bold ${useImageGen ? 'bg-purple-50 text-purple-600' : 'text-gray-400'}`}>
-                                        <div className="flex items-center gap-2"><ImageIcon size={14} /><span>Image Studio</span></div>
-                                        <span className="text-[9px]">{useImageGen ? 'ON' : 'OFF'}</span>
-                                    </button>
-                                    {useImageGen && (
-                                        <div className="flex text-[9px] font-bold border-t border-purple-100 bg-purple-50/50">
-                                            <button onClick={() => setDrawEngine('volcengine')} className={`flex-1 py-1.5 transition-colors ${drawEngine === 'volcengine' ? 'text-purple-700 bg-white shadow-sm' : 'text-purple-300 hover:text-purple-500'}`}>Volcengine</button>
-                                            <button onClick={() => setDrawEngine('openrouter')} className={`flex-1 py-1.5 transition-colors ${drawEngine === 'openrouter' ? 'text-purple-700 bg-white shadow-sm' : 'text-purple-300 hover:text-purple-500'}`}>OpenRouter</button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="border rounded-lg overflow-hidden transition-all bg-white border-gray-200">
-                                    <button onClick={toggleVideoGen} className={`w-full flex items-center justify-between px-3 py-2 text-xs font-bold ${useVideoGen ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400'}`}>
-                                        <div className="flex items-center gap-2"><Film size={14} /><span>Video Studio</span></div>
-                                        <span className="text-[9px]">{useVideoGen ? 'ON' : 'OFF'}</span>
-                                    </button>
-                                    {useVideoGen && (
-                                        <div className="flex text-[9px] font-bold border-t border-indigo-100 bg-indigo-50/50">
-                                            <button onClick={() => setVideoModel('hailuo')} className={`flex-1 py-1.5 transition-colors ${videoModel === 'hailuo' ? 'text-indigo-700 bg-white shadow-sm' : 'text-indigo-300 hover:text-indigo-500'}`}>Hailuo (Fal)</button>
-                                            <button onClick={() => setVideoModel('doubao')} className={`flex-1 py-1.5 transition-colors ${videoModel === 'doubao' ? 'text-indigo-700 bg-white shadow-sm' : 'text-indigo-300 hover:text-indigo-500'}`}>Doubao (Volc)</button>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <div><label className={`text-xs ${theme.text} opacity-50 font-bold mb-2 block uppercase`}>Quick Presets</label><div className="flex flex-wrap gap-2">{PRESETS.map((p, i) => (<button key={i} onClick={() => { setScenario(p.scenario); setAction(p.action); setStyle(p.style); }} className={`px-3 py-1.5 rounded-lg ${theme.inputBg} border ${theme.border} text-[10px] ${theme.text} hover:border-purple-500/50 transition-all`}>{p.name}</button>))}</div></div>

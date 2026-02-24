@@ -348,6 +348,9 @@ export default function Home() {
                 setDrawEngine={setDrawEngine}
                 setShowApiModal={setShowApiModal}
                 handleExportData={handleExportData}
+                useImageGen={config.imageGen}
+                toggleImageGen={() => setConfig(prev => ({ ...prev, imageGen: !prev.imageGen }))}
+                toggleVideoGen={() => setUseVideoGen(!useVideoGen)}
                 importInputRef={fileHandler.importInputRef}
                 setIsGlobalGenerating={setIsGlobalGenerating}
                 handleVisualCommand={engine.handleVisualCommand}

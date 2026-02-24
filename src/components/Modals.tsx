@@ -96,7 +96,10 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
 
     return (
         <AnimatePresence>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            >
                 <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#1e1e1e] border border-gray-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-mono text-gray-300 flex flex-col max-h-[80vh]">
                     <div className="px-4 py-3 border-b border-gray-700 bg-[#252526] flex justify-between items-center shrink-0">
                         <div className="flex items-center gap-2 text-xs font-bold text-emerald-500">
