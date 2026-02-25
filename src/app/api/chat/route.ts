@@ -4,7 +4,8 @@ import { CHAR_IMAGE_DB } from "../../../data/image_config";
 import { CHAR_DATA } from "../../../data/char_config"; 
 import { BGM_LIBRARY } from "../../../data/bgm_library";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const STORY_PRE_PROMPT = `
 严格遵循以下规则：
