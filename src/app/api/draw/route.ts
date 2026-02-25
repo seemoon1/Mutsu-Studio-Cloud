@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         image: data.data[0].url,
-        meta: { charId, model: "Volcengine Doubao" }
+        meta: { charId, model: "doubao-seedream-5-0-260128" }
       });
     }
 
