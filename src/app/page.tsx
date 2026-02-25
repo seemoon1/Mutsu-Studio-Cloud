@@ -330,6 +330,7 @@ export default function Home() {
 
     if (currentSession?.memoryMode === 'novel') {
         return (
+            <>
             <NovelInterface
                 currentSession={currentSession}
                 handleSend={engine.handleSend}
@@ -385,6 +386,10 @@ export default function Home() {
                 deleteMessage={engine.handleDeleteMessage}
                 updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
             />
+
+            <ApiKeysModal isOpen={showApiModal} onClose={() => setShowApiModal(false)} />
+            <ImageViewerModal url={previewImage} onClose={() => setPreviewImage(null)} />
+        </>
         );
     }
 

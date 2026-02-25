@@ -437,8 +437,10 @@ ${COLOR_INSTRUCTION}
     }
 
     if (provider === 'deepseek') {
-        const apiKey = localKeys?.deepseek || process.env.DEEPSEEK_API_KEY;
-        if (!apiKey) throw new Error("Missing DeepSeek API Key! 请在左侧边栏配置您的密钥。");
+        const rawKey = localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
+        const apiKey = rawKey.trim(); 
+        
+        if (!apiKey) throw new Error("Missing DeepSeek API Key! 请在左侧边栏🔑配置您的密钥。");
 
         const client = new OpenAI({
             apiKey: apiKey,
@@ -470,8 +472,10 @@ ${COLOR_INSTRUCTION}
     }
 
     else if (provider === 'google') {
-        const apiKey = localKeys?.google || process.env.GOOGLE_API_KEY;
-        if (!apiKey) throw new Error("Missing GOOGLE_API_KEY! 请配置密钥。");
+        const rawKey = localKeys?.google || process.env.GOOGLE_API_KEY || "";
+        const apiKey = rawKey.trim();
+
+        if (!apiKey) throw new Error("Missing GOOGLE_API_KEY! 请在左侧边栏🔑配置您的密钥。");
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const cleanModel = model.replace("google/", "") || "gemini-1.5-flash";
@@ -510,8 +514,10 @@ ${COLOR_INSTRUCTION}
     }
 
     else {
-        const apiKey = localKeys?.openrouter || process.env.OPENROUTER_API_KEY;
-        if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY! 请配置密钥。");
+        const rawKey = localKeys?.openrouter || process.env.OPENROUTER_API_KEY || "";
+        const apiKey = rawKey.trim();
+
+        if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY! 请在左侧边栏🔑配置您的密钥。");
 
         const client = new OpenAI({
             apiKey: apiKey,
