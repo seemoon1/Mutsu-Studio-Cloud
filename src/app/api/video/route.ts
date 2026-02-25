@@ -67,7 +67,11 @@ export async function POST(req: Request) {
         })
       });
 
-      if (!res.ok) throw new Error(`Volcengine Video Error: ${await res.text()}`);
+      if (!res.ok) {
+          const errText = await res.text();
+          console.error("🌋 Volc Video Raw Error:", errText);
+          throw new Error(`Volcengine Video Error: ${errText || res.statusText}`);
+      }
       const data = await res.json();
 
       return NextResponse.json({

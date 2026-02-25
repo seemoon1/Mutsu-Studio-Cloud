@@ -247,15 +247,20 @@ export async function POST(req: Request) {
     const VISUAL_INSTRUCTION = `
 === 🎥 VISUAL PRODUCTION STUDIO (SAFE MODE) ===
 [CAPABILITIES]:
-1. **IMAGE STUDIO** (${useImageGen ? "OPEN" : "CLOSED"}): For static portraits and art. -> Output <draw> tag.
-2. **VIDEO STUDIO** (${useVideoGen ? "OPEN" : "CLOSED"}): For clean, graceful animation. -> Output <video> tag.
+1. **IMAGE STUDIO** (${useImageGen ? "OPEN" : "CLOSED"}): For static portraits and art.
+2. **VIDEO STUDIO** (${useVideoGen ? "OPEN" : "CLOSED"}): For clean, graceful animation.
+
+[🛑 ABSOLUTE TAG RULES - READ CAREFULLY]:
+1. You MUST use EXACTLY \`<draw>...</draw>\` or \`<video>...</video>\`.
+2. NEVER use mismatched tags like \`<video>...</video_log>\`.
+3. NEVER output conversational filler (e.g., "Here is the code", "I will generate..."). JUST OUTPUT THE TAG.
 
 [JSON FORMAT FOR IMAGE]:
 <draw>
 {
   "type": "image",
-  "charId": "sakiko",
-  "prompt": "1girl, looking at viewer, highly detailed, masterpiece, beautiful lighting"
+  "charId": "...",
+  "prompt": "1girl, looking at viewer, highly detailed..."
 }
 </draw>
 
@@ -263,8 +268,8 @@ export async function POST(req: Request) {
 <video>
 {
   "type": "video",
-  "charId": "sakiko",
-  "prompt": "Camera pans slowly, girl smiling gently, hair blowing in the wind, high fidelity anime"
+  "charId": "...",
+  "prompt": "Camera pans slowly, girl smiling gently..."
 }
 </video>
 `;

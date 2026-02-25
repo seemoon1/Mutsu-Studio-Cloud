@@ -650,7 +650,9 @@ export const useChatEngine = ({
                     const logTag = targetFingerprint
                       .replace("<video>", "<video_log>")
                       .replace("</video>", "</video_log>");
-                    const showcase = `\n\n> **[ 🎥 Cinematic Sequence ]**\n<video controls playsinline loop src="${videoUrl}" class="w-full rounded-2xl shadow-lg border border-white/20 my-4" />\n\n`;
+
+                    const showcase = `\n\n![Video](${videoUrl})\n\n`;
+
                     return {
                       ...m,
                       content: m.content.replace(
