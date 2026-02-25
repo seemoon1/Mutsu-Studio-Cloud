@@ -96,8 +96,8 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
 
     return (
         <AnimatePresence>
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+            <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
             >
                 <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#1e1e1e] border border-gray-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-mono text-gray-300 flex flex-col max-h-[80vh]">
@@ -139,7 +139,7 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                         </div>
                         <div className="pt-2 border-t border-gray-700 mt-2">
                             <label className="block text-red-400 font-bold mb-1 flex items-center gap-1">
-                                <Lock size={12} /> Site Access Code (设置密码)
+                                <Lock size={12} /> Site Access Code (若站长设置了密码)
                             </label>
                             <input
                                 type="password"
