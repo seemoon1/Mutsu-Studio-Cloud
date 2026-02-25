@@ -119,6 +119,7 @@ export const useChatEngine = ({
       google: localStorage.getItem("mutsu_key_google") || "",
       tavily: localStorage.getItem("mutsu_key_tavily") || "",
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
+      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
       fal: localStorage.getItem("mutsu_key_fal") || "",
       accessCode: localStorage.getItem("mutsu_access_code") || "",
     };
@@ -580,6 +581,7 @@ export const useChatEngine = ({
 
     const localKeys = {
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
+      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "", 
       fal: localStorage.getItem("mutsu_key_fal") || "",
       openrouter: localStorage.getItem("mutsu_key_openrouter") || "",
     };
