@@ -1,7 +1,7 @@
 import { OpenAI } from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CHAR_IMAGE_DB } from "../../../data/image_config";
-import { CHAR_DATA } from "../../../data/char_config"; 
+import { CHAR_DATA } from "../../../data/char_config";
 import { BGM_LIBRARY } from "../../../data/bgm_library";
 
 export const runtime = "nodejs";
@@ -115,7 +115,12 @@ function generateDynamicStatPrompt(stats: any, charName: string) {
   if (!stats) return "";
 
   let prompts = [];
-  const { affection = 0, Obsession = 0, Possessiveness = 0, Intimacy = 0 } = stats;
+  const {
+    affection = 0,
+    Obsession = 0,
+    Possessiveness = 0,
+    Intimacy = 0,
+  } = stats;
 
   if (Obsession > 80) {
     prompts.push(`
@@ -163,7 +168,7 @@ ${prompts.join("\n")}
 }
 
 async function searchKnowledge(query: string) {
-  return ""; 
+  return "";
 }
 
 async function injectWebSearch(prompt: string, messages: any[]) {
@@ -216,33 +221,40 @@ export async function POST(req: Request) {
       useMusicControl,
       stm,
       ltm,
-      codeRepository, 
+      codeRepository,
       novelConfig,
       charStatus,
       provider = "deepseek",
-      temperature = 0.7, 
-      localKeys 
+      temperature = 0.7,
+      localKeys,
     } = body;
 
     const serverCode = process.env.ACCESS_CODE;
     if (serverCode) {
-        const userCode = localKeys?.accessCode;
-        if (userCode !== serverCode) {
-            return new Response(JSON.stringify({ error: "🚫 Access Code Invalid (密码错误)" }), { status: 401 });
-        }
+      const userCode = localKeys?.accessCode;
+      if (userCode !== serverCode) {
+        return new Response(
+          JSON.stringify({ error: "🚫 Access Code Invalid (密码错误)" }),
+          { status: 401 },
+        );
+      }
     }
 
-    const allChars = CHAR_DATA; 
+    const allChars = CHAR_DATA;
 
     const colorMapObj = {
-      "User": "#6A5ACD", "System": "#000000",
-      ...allChars.reduce((acc: any, c: any) => ({ ...acc, [c.name]: c.hex }), {})
+      User: "#6A5ACD",
+      System: "#000000",
+      ...allChars.reduce(
+        (acc: any, c: any) => ({ ...acc, [c.name]: c.hex }),
+        {},
+      ),
     };
 
     const baseModelType = "illustrious";
-    const outfitList = Object.values(CHAR_IMAGE_DB).map(c => 
-        `- ${c.name}: [${c.outfits.map(o => o.id).join(", ")}]`
-    ).join("\n");
+    const outfitList = Object.values(CHAR_IMAGE_DB)
+      .map((c) => `- ${c.name}: [${c.outfits.map((o) => o.id).join(", ")}]`)
+      .join("\n");
 
     const VISUAL_INSTRUCTION = `
 === 🎥 VISUAL PRODUCTION STUDIO (SAFE MODE) ===
@@ -281,7 +293,7 @@ export async function POST(req: Request) {
     [Color Map]: ${JSON.stringify(colorMapObj)}
     `;
 
-    let knowledgeBlock = "";  
+    let knowledgeBlock = "";
 
     let finalSystemPrompt = "";
     let finalMessages = messages;
@@ -307,7 +319,7 @@ ${COLOR_INSTRUCTION}
 
       if (useMusicControl) finalSystemPrompt += buildMusicMenu();
 
-      const MAX_HISTORY = 6; 
+      const MAX_HISTORY = 6;
       if (messages.length > MAX_HISTORY) {
         finalMessages = messages.slice(-MAX_HISTORY);
       }
@@ -442,158 +454,204 @@ ${COLOR_INSTRUCTION}
       }
     }
 
-    if (provider === 'deepseek') {
-        
-        if (model === 'volcengine-doubao') {
-            const apiKey = localKeys?.volcengine?.trim() || process.env.VOLC_API_KEY;
-            const epId = localKeys?.volc_ep_chat?.trim() || process.env.VOLC_CHAT_EP;
-            
-            if (!apiKey) throw new Error("Missing Volcengine API Key! 请在左侧边栏🔑配置。");
-            if (!epId) throw new Error("Missing Volcengine Chat Endpoint ID! 请配置聊天模型的 ep-xxx。");
+    if (provider === "deepseek") {
+      if (model === "volcengine-doubao") {
+        const apiKey =
+          localKeys?.volcengine?.trim() || process.env.VOLC_API_KEY;
+        const epId =
+          localKeys?.volc_ep_chat?.trim() || process.env.VOLC_CHAT_EP;
 
-            const client = new OpenAI({
-                apiKey: apiKey,
-                baseURL: "https://ark.cn-beijing.volces.com/api/v3",
-            });
+        if (!apiKey) throw new Error("Missing Volcengine API Key!");
+        if (!epId) throw new Error("Missing Volcengine Chat Endpoint ID!");
 
-            const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
-
-            const stream = await client.chat.completions.create({
-                model: epId, // 🔴 把伪造的 model ID 替换成真实的 Endpoint ID!
-                messages: fullMessages,
-                stream: true,
-                temperature: temperature,
-            });
-
-            const encoder = new TextEncoder();
-            const readable = new ReadableStream({
-                async start(controller) {
-                    for await (const chunk of stream) {
-                        const text = chunk.choices[0]?.delta?.content || "";
-                        if (text) controller.enqueue(encoder.encode(text));
-                    }
-                    controller.close();
-                }
-            });
-            return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
-        } 
-        else {
-            const rawKey = localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
-            const apiKey = rawKey.trim(); 
-            
-            if (!apiKey) throw new Error("Missing DeepSeek API Key! 请在左侧边栏🔑配置您的密钥。");
-
-            const client = new OpenAI({
-                apiKey: apiKey,
-                baseURL: "https://api.deepseek.com",
-            });
-            
-            const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
-            const cleanModel = model.replace("deepseek/", "") || "deepseek-chat";
-
-            const stream = await client.chat.completions.create({
-                model: cleanModel,
-                messages: fullMessages,
-                stream: true,
-                temperature: temperature,
-            });
-
-            const encoder = new TextEncoder();
-            const readable = new ReadableStream({
-                async start(controller) {
-                    for await (const chunk of stream) {
-                        const text = chunk.choices[0]?.delta?.content || "";
-                        if (text) controller.enqueue(encoder.encode(text));
-                    }
-                    controller.close();
-                }
-            });
-            return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
-        }
-    }
-
-    else if (provider === 'google') {
-        const rawKey = localKeys?.google || process.env.GOOGLE_API_KEY || "";
-        const apiKey = rawKey.trim();
-
-        if (!apiKey) throw new Error("Missing GOOGLE_API_KEY! 请在左侧边栏🔑配置您的密钥。");
-
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const cleanModel = model.replace("google/", "") || "gemini-1.5-flash";
-
-        const geminiModel = genAI.getGenerativeModel({ 
-            model: cleanModel,
-            // @ts-ignore
-            systemInstruction: finalSystemPrompt
-        });
-
-        let history = messages.filter((m: any) => m.role !== 'system').slice(0, -1).map((m: any) => ({
-            role: m.role === "assistant" ? "model" : "user",
-            parts: [{ text: typeof m.content === "string" ? m.content : JSON.stringify(m.content) }],
-        }));
-
-        if (history.length > 0 && history[0].role === 'model') {
-            history.unshift({ role: 'user', parts: [{ text: "[System Initialization...]" }] });
-        }
-
-        const lastMsg = messages[messages.length - 1].content;
-        const chat = geminiModel.startChat({ history });
-        const result = await chat.sendMessageStream(lastMsg);
-
-        const encoder = new TextEncoder();
-        const readable = new ReadableStream({
-            async start(controller) {
-                for await (const chunk of result.stream) {
-                    const chunkText = chunk.text();
-                    if (chunkText) controller.enqueue(encoder.encode(chunkText));
-                }
-                controller.close();
-            },
-        });
-
-        return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
-    }
-
-    else {
-        const rawKey = localKeys?.openrouter || process.env.OPENROUTER_API_KEY || "";
-        const apiKey = rawKey.trim();
-
-        if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY! 请在左侧边栏🔑配置您的密钥。");
+        console.log(`🌋 [Volc Debug] Connecting to Ark...`);
+        console.log(`   -> Endpoint (Model): ${epId}`);
+        const baseURL = "https://ark.cn-beijing.volces.com/api/v3";
 
         const client = new OpenAI({
-            apiKey: apiKey,
-            baseURL: "https://openrouter.ai/api/v1",
-            defaultHeaders: {
-                "HTTP-Referer": "https://mutsu-studio.vercel.app",
-                "X-Title": "Mutsu Studio Cloud",
-            },
+          apiKey: apiKey,
+          baseURL: baseURL,
         });
 
-        const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
+        const fullMessages = [
+          { role: "system", content: finalSystemPrompt },
+          ...messages,
+        ];
 
-        const stream = await client.chat.completions.create({
-            model: model || "google/gemini-2.0-flash-001",
+        try {
+          const stream = await client.chat.completions.create({
+            model: epId,
             messages: fullMessages,
             stream: true,
             temperature: temperature,
+          });
+
+          const encoder = new TextEncoder();
+          const readable = new ReadableStream({
+            async start(controller) {
+              for await (const chunk of stream) {
+                const text = chunk.choices[0]?.delta?.content || "";
+                if (text) controller.enqueue(encoder.encode(text));
+              }
+              controller.close();
+            },
+          });
+          return new Response(readable, {
+            headers: { "Content-Type": "text/event-stream" },
+          });
+        } catch (e: any) {
+          console.error("🔥 Volc Chat Error Details:", e);
+          throw new Error(`Volcengine Chat Failed: ${e.message}`);
+        }
+      } else {
+        const rawKey =
+          localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
+        const apiKey = rawKey.trim();
+
+        if (!apiKey)
+          throw new Error(
+            "Missing DeepSeek API Key! 请在左侧边栏🔑配置您的密钥。",
+          );
+
+        const client = new OpenAI({
+          apiKey: apiKey,
+          baseURL: "https://api.deepseek.com",
+        });
+
+        const fullMessages = [
+          { role: "system", content: finalSystemPrompt },
+          ...messages,
+        ];
+        const cleanModel = model.replace("deepseek/", "") || "deepseek-chat";
+
+        const stream = await client.chat.completions.create({
+          model: cleanModel,
+          messages: fullMessages,
+          stream: true,
+          temperature: temperature,
         });
 
         const encoder = new TextEncoder();
         const readable = new ReadableStream({
-            async start(controller) {
-                for await (const chunk of stream) {
-                    const text = chunk.choices[0]?.delta?.content || "";
-                    if (text) controller.enqueue(encoder.encode(text));
-                }
-                controller.close();
-            },
+          async start(controller) {
+            for await (const chunk of stream) {
+              const text = chunk.choices[0]?.delta?.content || "";
+              if (text) controller.enqueue(encoder.encode(text));
+            }
+            controller.close();
+          },
         });
+        return new Response(readable, {
+          headers: { "Content-Type": "text/event-stream" },
+        });
+      }
+    } else if (provider === "google") {
+      const rawKey = localKeys?.google || process.env.GOOGLE_API_KEY || "";
+      const apiKey = rawKey.trim();
 
-        return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
+      if (!apiKey)
+        throw new Error("Missing GOOGLE_API_KEY! 请在左侧边栏🔑配置您的密钥。");
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const cleanModel = model.replace("google/", "") || "gemini-1.5-flash";
+
+      const geminiModel = genAI.getGenerativeModel({
+        model: cleanModel,
+        // @ts-ignore
+        systemInstruction: finalSystemPrompt,
+      });
+
+      let history = messages
+        .filter((m: any) => m.role !== "system")
+        .slice(0, -1)
+        .map((m: any) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [
+            {
+              text:
+                typeof m.content === "string"
+                  ? m.content
+                  : JSON.stringify(m.content),
+            },
+          ],
+        }));
+
+      if (history.length > 0 && history[0].role === "model") {
+        history.unshift({
+          role: "user",
+          parts: [{ text: "[System Initialization...]" }],
+        });
+      }
+
+      const lastMsg = messages[messages.length - 1].content;
+      const chat = geminiModel.startChat({ history });
+      const result = await chat.sendMessageStream(lastMsg);
+
+      const encoder = new TextEncoder();
+      const readable = new ReadableStream({
+        async start(controller) {
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) controller.enqueue(encoder.encode(chunkText));
+          }
+          controller.close();
+        },
+      });
+
+      return new Response(readable, {
+        headers: { "Content-Type": "text/event-stream" },
+      });
+    } else {
+      const rawKey =
+        localKeys?.openrouter || process.env.OPENROUTER_API_KEY || "";
+      const apiKey = rawKey.trim();
+
+      if (!apiKey)
+        throw new Error(
+          "Missing OPENROUTER_API_KEY! 请在左侧边栏🔑配置您的密钥。",
+        );
+
+      const client = new OpenAI({
+        apiKey: apiKey,
+        baseURL: "https://openrouter.ai/api/v1",
+        defaultHeaders: {
+          "HTTP-Referer": "https://mutsu-studio.vercel.app",
+          "X-Title": "Mutsu Studio Cloud",
+        },
+      });
+
+      const fullMessages = [
+        { role: "system", content: finalSystemPrompt },
+        ...messages,
+      ];
+
+      const stream = await client.chat.completions.create({
+        model: model || "google/gemini-2.0-flash-001",
+        messages: fullMessages,
+        stream: true,
+        temperature: temperature,
+      });
+
+      const encoder = new TextEncoder();
+      const readable = new ReadableStream({
+        async start(controller) {
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content || "";
+            if (text) controller.enqueue(encoder.encode(text));
+          }
+          controller.close();
+        },
+      });
+
+      return new Response(readable, {
+        headers: { "Content-Type": "text/event-stream" },
+      });
     }
-
   } catch (error: any) {
     console.error("Chat API Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: error.message || "Internal Server Error" }),
+      { status: 500 },
+    );
   }
 }

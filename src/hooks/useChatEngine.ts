@@ -613,27 +613,48 @@ export const useChatEngine = ({
           throw new Error(vidData.error || "Video Request Failed");
 
         let videoUrl = null;
+
         if (vidData.status === "succeeded" && vidData.output?.url) {
           videoUrl = vidData.output.url;
-        } else if (vidData.statusUrl) {
+        } else if (vidData.status === "queued" || vidData.statusUrl) {
           showToast("⏳ Rendering Cinematic (Wait ~2m)...");
+
+          const currentProvider =
+            vidData.provider ||
+            (cmd.videoModel === "doubao" ? "volcengine" : "fal");
+
           for (let i = 0; i < 60; i++) {
             await new Promise((r) => setTimeout(r, 3000));
-            const check = await fetch(
-              `/api/video?statusUrl=${encodeURIComponent(vidData.statusUrl)}&responseUrl=${encodeURIComponent(vidData.responseUrl || "")}`,
-              {
-                headers: {
-                  "X-Fal-Key": localKeys.fal || "",
-                },
-              },
-            );
+
+            const queryParams = new URLSearchParams();
+
+            if (currentProvider === "volcengine") {
+              queryParams.set("provider", "volcengine");
+              queryParams.set("taskId", vidData.taskId);
+            } else {
+              queryParams.set("statusUrl", vidData.statusUrl);
+              if (vidData.responseUrl)
+                queryParams.set("responseUrl", vidData.responseUrl);
+            }
+
+            const headers: Record<string, string> = {};
+            if (currentProvider === "volcengine") {
+              headers["X-Volc-Key"] = localKeys.volcengine;
+            } else {
+              headers["X-Fal-Key"] = localKeys.fal;
+            }
+
+            const check = await fetch(`/api/video?${queryParams.toString()}`, {
+              headers,
+            });
             const checkData = await check.json();
+
             if (checkData.status === "succeeded") {
               videoUrl = checkData.output?.url;
               break;
             }
             if (checkData.status === "failed")
-              throw new Error("Render Failed on Server");
+              throw new Error(`Render Failed (${currentProvider})`);
           }
         }
 

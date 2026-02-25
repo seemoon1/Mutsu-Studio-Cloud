@@ -51,34 +51,55 @@ export async function POST(req: Request) {
     // 🌋 方案 B：火山引擎 (Seedance 1.5 Pro)
     // ==========================================
     else if (provider === "volcengine") {
-      if (!VOLC_API_KEY) throw new Error("Missing Volcengine API Key. 请在金库中配置。");
-      
+      const VOLC_API_KEY = localKeys?.volcengine?.trim() || process.env.VOLC_API_KEY;
       const VOLC_MODEL_ID = localKeys?.volc_ep_video?.trim() || "doubao-seedance-1-5-pro-251215";
+      
+      if (!VOLC_API_KEY) throw new Error("Missing Volcengine API Key.");
 
-      const res = await fetch("https://ark.cn-beijing.volces.com/api/v3/videos/generations", {
+      console.log(`🌋 [Volc Video] Target EP: ${VOLC_MODEL_ID}`);
+
+      const arkUrl = "https://ark.cn-beijing.volces.com/api/v3/videos/generations";
+      
+      const payload = {
+          model: VOLC_MODEL_ID,
+          prompt: `Anime style, high quality. ${prompt}`,
+          stream: false
+      };
+
+      const res = await fetch(arkUrl, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${VOLC_API_KEY}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          model: VOLC_MODEL_ID,
-          prompt: `Anime style, smooth animation, high quality. ${prompt}`
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
           const errText = await res.text();
-          console.error("🌋 Volc Video Raw Error:", errText);
-          throw new Error(`Volcengine Video Error: ${errText || res.statusText}`);
+          console.error(`🔥 Volc Status: ${res.status}`);
+          console.error(`🔥 Volc Response: ${errText}`);
+          
+          if (res.status === 404) {
+              throw new Error("Volcengine Endpoint Not Found (404). 请检查：1. 接入点是否‘运行中’？ 2. 账号是否开通了 Seedance 权限？ 3. 地域是否正确 (默认北京)?");
+          }
+          throw new Error(`Volcengine Video Error (${res.status}): ${errText}`);
       }
+
       const data = await res.json();
+      
+      const taskId = data.id || data.data?.id;
+
+      if (!taskId) {
+          console.error("🔥 Volc Response Data:", data);
+          throw new Error("Failed to retrieve Task ID from Volcengine.");
+      }
 
       return NextResponse.json({
         success: true, 
         status: 'queued', 
-        taskId: data.data?.task_id || data.task_id, 
-        provider: 'volcengine'
+        taskId: taskId,
+        provider: 'volcengine' 
       });
     }
 
@@ -92,6 +113,8 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
+    const provider = searchParams.get('provider'); 
+    
     const statusUrl = searchParams.get('statusUrl');
     const responseUrl = searchParams.get('responseUrl');
     
@@ -101,7 +124,44 @@ export async function GET(req: Request) {
     if (!statusUrl) return NextResponse.json({ error: "No Status URL provided" }, { status: 400 });
     if (!FINAL_FAL_KEY) return NextResponse.json({ error: "Missing Fal API Key for polling" }, { status: 401 });
 
+    
+
     try {
+        // ==========================
+        // 🌋 火山引擎轮询逻辑
+        // ==========================
+        if (provider === 'volcengine') {
+            const taskId = searchParams.get('taskId');
+            const userVolcKey = req.headers.get("X-Volc-Key");
+            const FINAL_VOLC_KEY = userVolcKey?.trim() || process.env.VOLC_API_KEY;
+
+            if (!taskId || !FINAL_VOLC_KEY) return NextResponse.json({ error: "Missing TaskID or Key" }, { status: 400 });
+
+            const checkUrl = `https://ark.cn-beijing.volces.com/api/v3/videos/generations/${taskId}`;
+
+            const res = await fetch(checkUrl, {
+                headers: { "Authorization": `Bearer ${FINAL_VOLC_KEY}` }
+            });
+
+            if (!res.ok) throw new Error(`Volc Check Error: ${await res.text()}`);
+            
+            const data = await res.json();
+            
+            const remoteStatus = data.status || data.data?.status;
+            
+            let status = 'processing';
+            let videoUrl = null;
+
+            if (remoteStatus === 'succeeded' || remoteStatus === 'SUCCEEDED') {
+                status = 'succeeded';
+                videoUrl = data.data?.video?.url || data.video?.url;
+            } else if (remoteStatus === 'failed' || remoteStatus === 'FAILED') {
+                status = 'failed';
+            }
+
+            return NextResponse.json({ status, output: { url: videoUrl } });
+        }
+      
         const res = await fetch(statusUrl, {
             headers: { "Authorization": `Key ${FINAL_FAL_KEY}` }
         });
