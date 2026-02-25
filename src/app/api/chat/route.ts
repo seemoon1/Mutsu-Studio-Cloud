@@ -461,16 +461,16 @@ ${COLOR_INSTRUCTION}
         const epId =
           localKeys?.volc_ep_chat?.trim() || process.env.VOLC_CHAT_EP;
 
-        if (!apiKey) throw new Error("Missing Volcengine API Key!");
-        if (!epId) throw new Error("Missing Volcengine Chat Endpoint ID!");
+        if (!apiKey)
+          throw new Error("Missing Volcengine API Key! 请在金库中配置。");
+        if (!epId)
+          throw new Error("Missing Chat Endpoint ID! 请在金库配置 ep-xxxx。");
 
-        console.log(`🌋 [Volc Debug] Connecting to Ark...`);
-        console.log(`   -> Endpoint (Model): ${epId}`);
-        const baseURL = "https://ark.cn-beijing.volces.com/api/v3";
+        console.log(`🌋 [Volc Chat] Connecting to Ark... EP: ${epId}`);
 
         const client = new OpenAI({
           apiKey: apiKey,
-          baseURL: baseURL,
+          baseURL: "https://ark.cn-beijing.volces.com/api/v3",
         });
 
         const fullMessages = [
@@ -478,31 +478,26 @@ ${COLOR_INSTRUCTION}
           ...messages,
         ];
 
-        try {
-          const stream = await client.chat.completions.create({
-            model: epId,
-            messages: fullMessages,
-            stream: true,
-            temperature: temperature,
-          });
+        const stream = await client.chat.completions.create({
+          model: epId,
+          messages: fullMessages,
+          stream: true,
+          temperature: temperature,
+        });
 
-          const encoder = new TextEncoder();
-          const readable = new ReadableStream({
-            async start(controller) {
-              for await (const chunk of stream) {
-                const text = chunk.choices[0]?.delta?.content || "";
-                if (text) controller.enqueue(encoder.encode(text));
-              }
-              controller.close();
-            },
-          });
-          return new Response(readable, {
-            headers: { "Content-Type": "text/event-stream" },
-          });
-        } catch (e: any) {
-          console.error("🔥 Volc Chat Error Details:", e);
-          throw new Error(`Volcengine Chat Failed: ${e.message}`);
-        }
+        const encoder = new TextEncoder();
+        const readable = new ReadableStream({
+          async start(controller) {
+            for await (const chunk of stream) {
+              const text = chunk.choices[0]?.delta?.content || "";
+              if (text) controller.enqueue(encoder.encode(text));
+            }
+            controller.close();
+          },
+        });
+        return new Response(readable, {
+          headers: { "Content-Type": "text/event-stream" },
+        });
       } else {
         const rawKey =
           localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
