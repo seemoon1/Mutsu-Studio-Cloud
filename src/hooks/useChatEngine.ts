@@ -453,7 +453,11 @@ export const useChatEngine = ({
         fetch("/api/summarize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: textToSummarize, mode: summarizeMode }),
+          body: JSON.stringify({
+            text: textToSummarize,
+            mode: summarizeMode,
+            localKeys: localKeys,
+          }),
         })
           .then((res) => res.json())
           .then((microData) => {
@@ -476,6 +480,7 @@ export const useChatEngine = ({
                           text: newStm,
                           previousLtm: s.ltm,
                           mode: "macro",
+                          localKeys: localKeys,
                         }),
                       })
                         .then((r) => r.json())
