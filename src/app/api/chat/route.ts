@@ -171,7 +171,7 @@ async function searchKnowledge(query: string) {
   return "";
 }
 
-async function injectWebSearch(prompt: string, messages: any[]) {
+async function injectWebSearch(prompt: string, messages: any[], tavilyKey: string) {
   try {
     const lastUserMsg = messages[messages.length - 1].content;
     let query = Array.isArray(lastUserMsg)
@@ -182,7 +182,7 @@ async function injectWebSearch(prompt: string, messages: any[]) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        api_key: process.env.TAVILY_API_KEY,
+        api_key: tavilyKey,
         query: query,
         search_depth: "basic",
         include_answer: true,
@@ -228,6 +228,8 @@ export async function POST(req: Request) {
       temperature = 0.7,
       localKeys,
     } = body;
+
+    const tKey = localKeys?.tavily?.trim() || process.env.TAVILY_API_KEY;
 
     const serverCode = process.env.ACCESS_CODE;
     if (serverCode) {
@@ -372,8 +374,10 @@ ${COLOR_INSTRUCTION}
 
       finalSystemPrompt += VISUAL_INSTRUCTION;
       finalSystemPrompt += engineerPersona;
-      if (useWebSearch)
-        finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages);
+      if (useWebSearch) {
+          if (!tKey) throw new Error("Missing Tavily Search Key! 请在金库中配置联网密钥。");
+          finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages, tKey);
+      }
 
       const ENGINEERING_WINDOW = 8;
       if (messages.length > ENGINEERING_WINDOW) {
@@ -425,8 +429,10 @@ ${COLOR_INSTRUCTION}
       if (ltm?.trim()) finalSystemPrompt += `[LTM]:\n${ltm}\n\n`;
       if (stm?.trim()) finalSystemPrompt += `[STM]:\n${stm}\n\n`;
 
-      if (useWebSearch)
-        finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages);
+      if (useWebSearch) {
+          if (!tKey) throw new Error("Missing Tavily Search Key! 请在金库中配置联网密钥。");
+          finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages, tKey);
+      }
 
       if (useImageGen) {
         finalSystemPrompt += `\n[SYSTEM NOTICE]: Visualizer ENABLED. Fill "imageGen" in JSON.\n[Available Outfits]:\n${outfitList}\n`;
