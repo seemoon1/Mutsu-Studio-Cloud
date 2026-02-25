@@ -473,7 +473,7 @@ export const NovelInterface = ({
                                             content={msg.content}
                                             onOptionClick={(opt: string) => handleGenerate('continue', opt)}
                                             theme={theme}
-                                            onDraw={handleVisualCommand}
+                                            onRetry={handleVisualCommand}
                                             onMediaClick={(media: any) => { if (media.type === 'image') setPreviewImage(media.url) }}
                                             isGenerating={isLoading}
                                         />
