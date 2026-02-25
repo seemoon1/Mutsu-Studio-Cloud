@@ -604,9 +604,9 @@ export const NovelInterface = ({
                                             {MODEL_DATA
                                                 .filter(g => {
                                                     const groupName = g.groupName.toLowerCase();
-                                                    if (apiProvider === 'deepseek') return groupName.includes("deepseek");
+                                                    if (apiProvider === 'deepseek') return groupName.includes("(official)");
                                                     if (apiProvider === 'google') return groupName.includes("google") || groupName.includes("gemini");
-                                                    if (apiProvider === 'openrouter') return true;
+                                                    if (apiProvider === 'openrouter') return !groupName.includes("(official)");
                                                     return true;
                                                 })
                                                 .flatMap(g => g.models)

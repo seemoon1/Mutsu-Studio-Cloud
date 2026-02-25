@@ -141,13 +141,13 @@ export const SidebarLeft = ({
                                 {MODEL_DATA.filter((g: any) => {
                                     const groupName = g.groupName.toLowerCase();
                                     if (apiProvider === 'deepseek') {
-                                        return groupName.includes("deepseek");
+                                        return groupName.includes("(official)");
                                     }
                                     if (apiProvider === 'google') {
                                         return groupName.includes("google") || groupName.includes("gemini");
                                     }
                                     if (apiProvider === 'openrouter') {
-                                        return true;
+                                        return !groupName.includes("(official)");
                                     }
                                     return true;
                                 }).map((g: any) => (

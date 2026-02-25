@@ -136,7 +136,14 @@ export const MODEL_DATA: ModelGroup[] = [
     ]
   },
   { 
-    groupName: "DeepSeek", 
+    groupName: "DeepSeek (Official)", 
+    models: [
+      { id: "deepseek-chat", name: "DeepSeek V3.2 (Latest/Chat)" },
+      { id: "deepseek-reasoner", name: "DeepSeek-V3.2 (Thinking)" },
+    ]
+  },
+  { 
+    groupName: "DeepSeek (OpenRouter)", 
     models: [
       { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2" },
       { id: "deepseek/deepseek-v3.2-exp", name: "DeepSeek v3.2-exp" },
