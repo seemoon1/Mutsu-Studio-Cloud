@@ -64,7 +64,7 @@ export const SuggestionModal = ({ isOpen, onClose, content, onConfirm }: any) =>
 );
 
 export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-    const [keys, setKeys] = useState({ deepseek: "", openrouter: "", google: "", tavily: "", volcengine: "", fal: "", accessCode: "" });
+    const [keys, setKeys] = useState({ deepseek: "", openrouter: "", google: "", tavily: "", volcengine: "", volc_ep: "", fal: "", accessCode: "" });
 
     useEffect(() => {
         if (isOpen) {
@@ -74,6 +74,7 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                 google: localStorage.getItem("mutsu_key_google") || "",
                 tavily: localStorage.getItem("mutsu_key_tavily") || "",
                 volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
+                volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
                 fal: localStorage.getItem("mutsu_key_fal") || "",
                 accessCode: localStorage.getItem("mutsu_access_code") || ""
             });
@@ -86,6 +87,7 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         localStorage.setItem("mutsu_key_google", keys.google);
         localStorage.setItem("mutsu_key_tavily", keys.tavily);
         localStorage.setItem("mutsu_key_volcengine", keys.volcengine);
+        localStorage.setItem("mutsu_key_volc_ep", keys.volc_ep);
         localStorage.setItem("mutsu_key_fal", keys.fal);
         localStorage.setItem("mutsu_access_code", keys.accessCode);
         alert("🔑 密钥已加密保存在您的浏览器本地！");
@@ -126,8 +128,12 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                             <input type="password" value={keys.google} onChange={e => setKeys({ ...keys, google: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-blue-500" placeholder="AIza..." />
                         </div>
                         <div>
-                            <label className="block text-orange-400 font-bold mb-1">Volcengine Key (火山引擎 - 画图/视频)</label>
-                            <input type="password" value={keys.volcengine} onChange={e => setKeys({ ...keys, volcengine: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-500" placeholder="填写火山引擎 API Key" />
+                            <label className="block text-orange-400 font-bold mb-1">Volcengine Key (火山引擎 API Key)</label>
+                            <input type="password" value={keys.volcengine} onChange={e => setKeys({...keys, volcengine: e.target.value})} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-500" placeholder="填写火山引擎 API Key" />
+                        </div>
+                        <div>
+                            <label className="block text-orange-300 font-bold mb-1">Volcengine Endpoint ID (火山模型接入点)</label>
+                            <input type="text" value={keys.volc_ep} onChange={e => setKeys({...keys, volc_ep: e.target.value})} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-400" placeholder="ep-2025xxxx..." />
                         </div>
                         <div>
                             <label className="block text-pink-400 font-bold mb-1">Fal.ai Key (海螺视频备用)</label>
