@@ -119,7 +119,9 @@ export const useChatEngine = ({
       google: localStorage.getItem("mutsu_key_google") || "",
       tavily: localStorage.getItem("mutsu_key_tavily") || "",
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
-      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
+      volc_ep_image: localStorage.getItem("mutsu_key_volc_ep_image") || "",
+      volc_ep_video: localStorage.getItem("mutsu_key_volc_ep_video") || "",
+      volc_ep_chat: localStorage.getItem("mutsu_key_volc_ep_chat") || "",
       fal: localStorage.getItem("mutsu_key_fal") || "",
       accessCode: localStorage.getItem("mutsu_access_code") || "",
     };
@@ -581,7 +583,9 @@ export const useChatEngine = ({
 
     const localKeys = {
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
-      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
+      volc_ep_image: localStorage.getItem("mutsu_key_volc_ep_image") || "",
+      volc_ep_video: localStorage.getItem("mutsu_key_volc_ep_video") || "",
+      volc_ep_chat: localStorage.getItem("mutsu_key_volc_ep_chat") || "",
       fal: localStorage.getItem("mutsu_key_fal") || "",
       openrouter: localStorage.getItem("mutsu_key_openrouter") || "",
     };
@@ -589,7 +593,7 @@ export const useChatEngine = ({
     setIsGlobalGenerating(true);
 
     try {
-      if (cmd.type === "video" && config.videoGen) {
+      if (cmd.type === "video") {
         const currentVideoModel =
           cmd.videoModel || config.videoModel || "hailuo";
         showToast(`🎬 Action! Engine: ${currentVideoModel}`);
@@ -670,7 +674,7 @@ export const useChatEngine = ({
         } else {
           throw new Error("Video Timeout.");
         }
-      } else if (cmd.type === "image" && config.imageGen) {
+      } else if (cmd.type === "image") {
         showToast(`🎨 Painting... (${drawEngine})`);
 
         const drawRes = await fetch("/api/draw", {

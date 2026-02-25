@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     else if (provider === "volcengine") {
       if (!VOLC_API_KEY) throw new Error("Missing Volcengine API Key. 请在金库中配置。");
       
-      const VOLC_MODEL_ID = localKeys?.volc_ep?.trim() || "doubao-seedance-1-5-pro-251215"; 
+      const VOLC_MODEL_ID = localKeys?.volc_ep_video?.trim() || "doubao-seedance-1-5-pro-251215";
 
       const res = await fetch("https://ark.cn-beijing.volces.com/api/v3/videos/generations", {
         method: "POST",

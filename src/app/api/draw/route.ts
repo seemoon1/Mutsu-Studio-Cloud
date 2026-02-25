@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     if (provider === "volcengine") {
       const VOLC_API_KEY = localKeys?.volcengine?.trim() || process.env.VOLC_API_KEY;
-      const VOLC_ENDPOINT_ID = localKeys?.volc_ep?.trim() || process.env.VOLC_IMAGE_EP;
+      const VOLC_ENDPOINT_ID = localKeys?.volc_ep_image?.trim() || process.env.VOLC_IMAGE_EP;
       
       if (!VOLC_API_KEY) throw new Error("Missing Volcengine API Key");
       if (!VOLC_ENDPOINT_ID) throw new Error("Missing Volcengine Endpoint ID (ep-xxx). 请在金库中配置接入点 ID。");

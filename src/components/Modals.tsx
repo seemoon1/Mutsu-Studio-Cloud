@@ -64,7 +64,7 @@ export const SuggestionModal = ({ isOpen, onClose, content, onConfirm }: any) =>
 );
 
 export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-    const [keys, setKeys] = useState({ deepseek: "", openrouter: "", google: "", tavily: "", volcengine: "", volc_ep: "", fal: "", accessCode: "" });
+    const [keys, setKeys] = useState({ deepseek: "", openrouter: "", google: "", tavily: "", volcengine: "", volc_ep_image: "", volc_ep_video: "", volc_ep_chat: "", fal: "", accessCode: "" });
 
     useEffect(() => {
         if (isOpen) {
@@ -74,7 +74,9 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                 google: localStorage.getItem("mutsu_key_google") || "",
                 tavily: localStorage.getItem("mutsu_key_tavily") || "",
                 volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
-                volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
+                volc_ep_image: localStorage.getItem("mutsu_key_volc_ep_image") || "",
+                volc_ep_video: localStorage.getItem("mutsu_key_volc_ep_video") || "",
+                volc_ep_chat: localStorage.getItem("mutsu_key_volc_ep_chat") || "",
                 fal: localStorage.getItem("mutsu_key_fal") || "",
                 accessCode: localStorage.getItem("mutsu_access_code") || ""
             });
@@ -87,7 +89,9 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         localStorage.setItem("mutsu_key_google", keys.google);
         localStorage.setItem("mutsu_key_tavily", keys.tavily);
         localStorage.setItem("mutsu_key_volcengine", keys.volcengine);
-        localStorage.setItem("mutsu_key_volc_ep", keys.volc_ep);
+        localStorage.setItem("mutsu_key_volc_ep_image", keys.volc_ep_image);
+        localStorage.setItem("mutsu_key_volc_ep_video", keys.volc_ep_video);
+        localStorage.setItem("mutsu_key_volc_ep_chat", keys.volc_ep_chat);
         localStorage.setItem("mutsu_key_fal", keys.fal);
         localStorage.setItem("mutsu_access_code", keys.accessCode);
         alert("🔑 密钥已加密保存在您的浏览器本地！");
@@ -127,13 +131,23 @@ export const ApiKeysModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                             <label className="block text-blue-400 font-bold mb-1">Google Gemini Key</label>
                             <input type="password" value={keys.google} onChange={e => setKeys({ ...keys, google: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-blue-500" placeholder="AIza..." />
                         </div>
-                        <div>
+                        <div className="pt-2 border-t border-gray-700 mt-2">
                             <label className="block text-orange-400 font-bold mb-1">Volcengine Key (火山引擎 API Key)</label>
-                            <input type="password" value={keys.volcengine} onChange={e => setKeys({...keys, volcengine: e.target.value})} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-500" placeholder="填写火山引擎 API Key" />
+                            <input type="password" value={keys.volcengine} onChange={e => setKeys({ ...keys, volcengine: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-500" placeholder="填写火山引擎 API Key" />
                         </div>
-                        <div>
-                            <label className="block text-orange-300 font-bold mb-1">Volcengine Endpoint ID (火山模型接入点)</label>
-                            <input type="text" value={keys.volc_ep} onChange={e => setKeys({...keys, volc_ep: e.target.value})} className="w-full bg-[#111] border border-gray-600 rounded p-2 outline-none focus:border-orange-400" placeholder="ep-2025xxxx..." />
+                        <div className="grid grid-cols-3 gap-2 mt-2">
+                            <div>
+                                <label className="block text-purple-300 text-[9px] font-bold mb-1">EP: Image (画图)</label>
+                                <input type="text" value={keys.volc_ep_image} onChange={e => setKeys({ ...keys, volc_ep_image: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-1.5 outline-none focus:border-purple-400 text-[10px]" placeholder="ep-xxx" />
+                            </div>
+                            <div>
+                                <label className="block text-indigo-300 text-[9px] font-bold mb-1">EP: Video (视频)</label>
+                                <input type="text" value={keys.volc_ep_video} onChange={e => setKeys({ ...keys, volc_ep_video: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-1.5 outline-none focus:border-indigo-400 text-[10px]" placeholder="ep-xxx" />
+                            </div>
+                            <div>
+                                <label className="block text-blue-300 text-[9px] font-bold mb-1">EP: Chat (聊天)</label>
+                                <input type="text" value={keys.volc_ep_chat} onChange={e => setKeys({ ...keys, volc_ep_chat: e.target.value })} className="w-full bg-[#111] border border-gray-600 rounded p-1.5 outline-none focus:border-blue-400 text-[10px]" placeholder="ep-xxx" />
+                            </div>
                         </div>
                         <div>
                             <label className="block text-pink-400 font-bold mb-1">Fal.ai Key (海螺视频备用)</label>

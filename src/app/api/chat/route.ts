@@ -438,38 +438,73 @@ ${COLOR_INSTRUCTION}
     }
 
     if (provider === 'deepseek') {
-        const rawKey = localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
-        const apiKey = rawKey.trim(); 
         
-        if (!apiKey) throw new Error("Missing DeepSeek API Key! 请在左侧边栏🔑配置您的密钥。");
+        if (model === 'volcengine-doubao') {
+            const apiKey = localKeys?.volcengine?.trim() || process.env.VOLC_API_KEY;
+            const epId = localKeys?.volc_ep_chat?.trim() || process.env.VOLC_CHAT_EP;
+            
+            if (!apiKey) throw new Error("Missing Volcengine API Key! 请在左侧边栏🔑配置。");
+            if (!epId) throw new Error("Missing Volcengine Chat Endpoint ID! 请配置聊天模型的 ep-xxx。");
 
-        const client = new OpenAI({
-            apiKey: apiKey,
-            baseURL: "https://api.deepseek.com",
-        });
+            const client = new OpenAI({
+                apiKey: apiKey,
+                baseURL: "https://ark.cn-beijing.volces.com/api/v3",
+            });
 
-        const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
-        const cleanModel = model.replace("deepseek/", "") || "deepseek-chat";
+            const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
 
-        const stream = await client.chat.completions.create({
-            model: cleanModel,
-            messages: fullMessages,
-            stream: true,
-            temperature: temperature,
-        });
+            const stream = await client.chat.completions.create({
+                model: epId, // 🔴 把伪造的 model ID 替换成真实的 Endpoint ID!
+                messages: fullMessages,
+                stream: true,
+                temperature: temperature,
+            });
 
-        const encoder = new TextEncoder();
-        const readable = new ReadableStream({
-            async start(controller) {
-                for await (const chunk of stream) {
-                    const text = chunk.choices[0]?.delta?.content || "";
-                    if (text) controller.enqueue(encoder.encode(text));
+            const encoder = new TextEncoder();
+            const readable = new ReadableStream({
+                async start(controller) {
+                    for await (const chunk of stream) {
+                        const text = chunk.choices[0]?.delta?.content || "";
+                        if (text) controller.enqueue(encoder.encode(text));
+                    }
+                    controller.close();
                 }
-                controller.close();
-            },
-        });
+            });
+            return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
+        } 
+        else {
+            const rawKey = localKeys?.deepseek || process.env.DEEPSEEK_API_KEY || "";
+            const apiKey = rawKey.trim(); 
+            
+            if (!apiKey) throw new Error("Missing DeepSeek API Key! 请在左侧边栏🔑配置您的密钥。");
 
-        return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
+            const client = new OpenAI({
+                apiKey: apiKey,
+                baseURL: "https://api.deepseek.com",
+            });
+            
+            const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
+            const cleanModel = model.replace("deepseek/", "") || "deepseek-chat";
+
+            const stream = await client.chat.completions.create({
+                model: cleanModel,
+                messages: fullMessages,
+                stream: true,
+                temperature: temperature,
+            });
+
+            const encoder = new TextEncoder();
+            const readable = new ReadableStream({
+                async start(controller) {
+                    for await (const chunk of stream) {
+                        const text = chunk.choices[0]?.delta?.content || "";
+                        if (text) controller.enqueue(encoder.encode(text));
+                    }
+                    controller.close();
+                }
+            });
+            return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
+        }
     }
 
     else if (provider === 'google') {
