@@ -119,11 +119,7 @@ export const MODEL_DATA: ModelGroup[] = [
     models: [
       { id: "deepseek-chat", name: "DeepSeek V3.2 (Latest/Chat)" },
       { id: "deepseek-reasoner", name: "DeepSeek-V3.2 (Thinking)" },
-      { id: "doubao-seed-2-0-pro-260215", name: "Doubao Seed 2.0 Pro (Volcengine)" },
-      { id: "doubao-seed-2-0-lite-260215", name: "Doubao Seed 2.0 Lite (Volcengine)" },
-      { id: "doubao-seed-2-0-mini-260215", name: "Doubao Seed 2.0 Mini (Volcengine)" },
-      { id: "doubao-seed-2-0-code-preview-260215", name: "Doubao Seed 2.0 Code (Volcengine)" },
-      { id: "doubao-1-5-pro-32k-250115", name: "Doubao 1.5 Pro 32k (Volcengine)" },
+      { id: "volcengine-doubao", name: "Doubao Models (Volcengine)" },
     ]
   },
   { 
