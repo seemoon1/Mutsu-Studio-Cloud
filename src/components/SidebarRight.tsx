@@ -309,6 +309,14 @@ const SidebarRightComponent = ({
                         )}
                     </div>
 
+                    <div className="p-3 border-t border-gray-100 bg-gray-50/50 mt-auto shrink-0">
+                        <div className="text-[9px] text-gray-400 leading-tight font-mono text-justify opacity-70">
+                            <span className="font-bold text-red-400">DISCLAIMER:</span> 本项目仅为技术演示容器。
+                            用户生成内容由 AI 供应商负责。使用者需自行承担因违反法律法规而产生的一切后果。
+                            商业使用严禁。
+                        </div>
+                    </div>
+
                     <SuggestionModal
                         isOpen={confirmModal.isOpen} onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
                         content={confirmModal.text}

@@ -581,7 +581,7 @@ export const useChatEngine = ({
 
     const localKeys = {
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
-      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "", 
+      volc_ep: localStorage.getItem("mutsu_key_volc_ep") || "",
       fal: localStorage.getItem("mutsu_key_fal") || "",
       openrouter: localStorage.getItem("mutsu_key_openrouter") || "",
     };
@@ -617,6 +617,11 @@ export const useChatEngine = ({
             await new Promise((r) => setTimeout(r, 3000));
             const check = await fetch(
               `/api/video?statusUrl=${encodeURIComponent(vidData.statusUrl)}&responseUrl=${encodeURIComponent(vidData.responseUrl || "")}`,
+              {
+                headers: {
+                  "X-Fal-Key": localKeys.fal || "",
+                },
+              },
             );
             const checkData = await check.json();
             if (checkData.status === "succeeded") {
