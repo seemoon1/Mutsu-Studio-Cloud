@@ -321,6 +321,10 @@ ${COLOR_INSTRUCTION}
 
       if (useMusicControl) finalSystemPrompt += buildMusicMenu();
 
+      console.log("====== SYSTEM PROMPT SNAPSHOT ======");
+      console.log(finalSystemPrompt);
+      console.log("==================================");
+
       const MAX_HISTORY = 6;
       if (messages.length > MAX_HISTORY) {
         finalMessages = messages.slice(-MAX_HISTORY);
@@ -378,6 +382,10 @@ ${COLOR_INSTRUCTION}
           if (!tKey) throw new Error("Missing Tavily Search Key! 请在金库中配置联网密钥。");
           finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages, tKey);
       }
+
+      console.log("====== SYSTEM PROMPT SNAPSHOT ======");
+      console.log(finalSystemPrompt);
+      console.log("==================================");
 
       const ENGINEERING_WINDOW = 8;
       if (messages.length > ENGINEERING_WINDOW) {
@@ -451,6 +459,10 @@ ${COLOR_INSTRUCTION}
 
       finalSystemPrompt += `\n\n[SYSTEM]: Start response with <thinking> block.`;
       finalSystemPrompt += `\n[SYSTEM WARNING]: Do NOT copy/paste previous [GALLERY] tags.`;
+
+      console.log("====== SYSTEM PROMPT SNAPSHOT ======");
+      console.log(finalSystemPrompt);
+      console.log("==================================");
 
       const WINDOW_SIZE = 4;
       if (messages.length > WINDOW_SIZE) {
