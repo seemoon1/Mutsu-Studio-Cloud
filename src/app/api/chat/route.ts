@@ -2,6 +2,7 @@ import { OpenAI } from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CHAR_IMAGE_DB } from "../../../data/image_config";
 import { CHAR_DATA } from "../../../data/char_config";
+import { LORE_LIBRARY } from "../../../data/lore_library";
 import { BGM_LIBRARY } from "../../../data/bgm_library";
 
 export const runtime = "nodejs";
@@ -242,14 +243,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const allChars = CHAR_DATA;
+    const allChars = CHAR_DATA.map(char => ({
+        ...char,
+        lore: LORE_LIBRARY[char.id] || "" 
+    }));
 
     const colorMapObj = {
-      User: "#6A5ACD",
-      System: "#000000",
+      "User": "#6A5ACD",
+      "用户": "#6A5ACD",
+      "System": "#000000",
       ...allChars.reduce(
         (acc: any, c: any) => ({ ...acc, [c.name]: c.hex }),
-        {},
+        {}
       ),
     };
 
@@ -369,6 +374,8 @@ ${COLOR_INSTRUCTION}
         engineerPersona += `\n\n=== [CURRENT PERSONA: ${activeChar.name}] ===\n[Personality Settings]:\n${activeChar.lore}\n`;
       }
 
+      engineerPersona += `\n${COLOR_INSTRUCTION}\n`;
+
       if (useImageGen) {
         engineerPersona += `\n[SYSTEM NOTICE]: Visualizer ENABLED. Fill "imageGen" in JSON.\n[Available Outfits]:\n${outfitList}\n`;
       }
@@ -421,13 +428,20 @@ ${COLOR_INSTRUCTION}
         .join("\n");
       let activeLore = "";
 
+      const mainChar = allChars.find((c: any) => c.id === characterId);
+      if (mainChar && mainChar.lore) {
+          activeLore += `=== [MAIN PERSONA: ${mainChar.name}] ===\n${mainChar.lore}\n\n`;
+      }
+
       allChars.forEach((char: any) => {
+        const triggerWords = char.keys || char.trigger_keys ||[];
         if (
-          char.trigger_keys &&
-          char.trigger_keys.some((k: string) => recentContext.includes(k))
+          char.id !== characterId && 
+          triggerWords.length > 0 &&
+          triggerWords.some((k: string) => recentContext.includes(k))
         ) {
-          const statsInfo = `[Stats]: Obsession Start: ${char.base_stats?.Obsession}/100, Affection Start: ${char.base_stats?.affection || 30}/100`;
-          activeLore += `=== [Character: ${char.name}] ===\n${char.lore}\n${statsInfo}\n\n`;
+          const statsInfo = `[Stats]: Obsession Start: ${char.baseStats?.Obsession || 10}/100`;
+          activeLore += `=== [Guest Character: ${char.name}] ===\n${char.lore}\n${statsInfo}\n\n`;
         }
       });
 
