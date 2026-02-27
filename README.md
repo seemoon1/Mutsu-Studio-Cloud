@@ -10,6 +10,8 @@ models:
   - deepseek-ai/DeepSeek-V3.2
   - deepseek-ai/DeepSeek-R1
   - deepseek-ai/DeepSeek-V3
+license: agpl-3.0
+short_description: A Serverless, Privacy-First AI Visual Novel Engine. (BYOK)
 ---
 
 # 🥒 Mutsu Studio Cloud (Live Demo)
