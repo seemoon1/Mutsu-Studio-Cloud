@@ -1,3 +1,13 @@
+---
+title: Mutsu Studio Cloud
+emoji: 🥒
+colorFrom: green
+colorTo: indigo
+sdk: docker
+pinned: false
+app_port: 3000
+---
+
 # 🥒 Mutsu Studio Cloud (Live Demo)
 
 <div align="center">
