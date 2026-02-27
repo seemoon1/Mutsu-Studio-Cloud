@@ -6,6 +6,10 @@ colorTo: indigo
 sdk: docker
 pinned: false
 app_port: 3000
+models:
+  - deepseek-ai/DeepSeek-V3.2
+  - deepseek-ai/DeepSeek-R1
+  - deepseek-ai/DeepSeek-V3
 ---
 
 # 🥒 Mutsu Studio Cloud (Live Demo)
@@ -16,6 +20,7 @@ app_port: 3000
 **无需部署、打开即用的沉浸式 AI 互动前端。**
 
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/SeeMoon1/Mutsu-Studio-Cloud)
 ![DeepSeek](https://img.shields.io/badge/Support-DeepSeek%20V3-blue)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)
 
