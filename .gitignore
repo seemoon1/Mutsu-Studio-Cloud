@@ -37,3 +37,4 @@ next-env.d.ts
 /public/gallery/*
 !/public/gallery/.keep
 start_mutsu.bat
+export_clean.py

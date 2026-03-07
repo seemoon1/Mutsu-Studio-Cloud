@@ -16,6 +16,7 @@ export const useChatEngine = ({
   manualOutfitId,
   apiProvider,
   drawEngine,
+  setEffect,
 }: any) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -249,6 +250,10 @@ export const useChatEngine = ({
             setTrackId
           ) {
             setTimeout(() => setTrackId(capturedState.music.trackId), 500);
+          }
+
+          if (capturedState.effect && capturedState.effect !== "none") {
+            if (setEffect) setEffect(capturedState.effect);
           }
         } catch (e) {
           console.error("Game State Error", e);

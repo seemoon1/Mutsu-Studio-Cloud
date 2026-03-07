@@ -3,3 +3,4 @@ node_modules
 .git
 .env.local
 start_mutsu.bat
+export_clean.py

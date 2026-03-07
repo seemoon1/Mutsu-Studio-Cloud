@@ -94,6 +94,7 @@ export default function Home() {
         setIsGlobalGenerating,
         manualOutfitId,
         apiProvider,
+        setEffect: ui.setEffect
     });
 
     const fileHandler = useFileHandler({
