@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles, ChevronUp, ChevronDown, MessageSquare, MoreHorizontal, Edit2, CornerDownRight, Folder, Trash2,
-  Moon, Terminal
+  Sparkles, ChevronUp, ChevronDown, MessageSquare, 
+  MoreHorizontal, Edit2, CornerDownRight, Folder, Trash2,
+  Moon, Terminal, MessageCircle
 } from "lucide-react";
 
 export const ThinkingBlock = ({ thought }: { thought: string }) => {
@@ -27,10 +28,11 @@ export const SessionItem = ({ session, isActive, isEditing, tempTitle, showMenu,
       <Moon size={14} className="text-purple-500 shrink-0" /> 
     ) : session.memoryMode === 'infinite' ? (
       <Terminal size={14} className="text-blue-500 shrink-0" /> 
+    ) : session.memoryMode === 'lime' ? (
+      <MessageCircle size={14} className="text-emerald-500 shrink-0" />
     ) : (
-      <MessageSquare size={14} className="..." /> 
+      <MessageSquare size={14} className={isActive ? "text-emerald-500" : "text-gray-300"} /> 
     )}
-    <MessageSquare size={14} className={isActive ? "text-emerald-500" : "text-gray-300"} />
     {isEditing ? (
       <input autoFocus className="flex-1 bg-white border border-emerald-300 rounded px-1 py-0.5 outline-none min-w-0" value={tempTitle} onChange={e => setTempTitle(e.target.value)} onBlur={onEditSave} onKeyDown={e => e.key === 'Enter' && onEditSave()} onClick={e => e.stopPropagation()} />
     ) : <span className="flex-1 truncate">{session.title}</span>}

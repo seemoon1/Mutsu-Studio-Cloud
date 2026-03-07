@@ -70,7 +70,11 @@ export type Session = {
   updatedAt: number;
   localWorldInfo?: string;
   
-  memoryMode?: 'infinite' | 'sliding' | 'novel';
+  memoryMode?: 'infinite' | 'sliding' | 'novel' | 'lime'; 
+
+  limeGroupId?: string;
+  limeTimeline?: number;
+  
   stm?: string;
   stmBackup?: string; 
   ltm?: string;

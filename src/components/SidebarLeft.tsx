@@ -6,7 +6,7 @@ import {
     FolderPlus, Plus, Search, Folder, Trash2, Download, Upload,
     Globe, Infinity, History, Image as ImageIcon,
     ListChecks, CheckSquare, Square, Sparkles, Terminal, Disc,
-    Mic, Key, HardDrive, Film
+    Mic, Key, HardDrive, Film, MessageCircle
 } from "lucide-react";
 import { MODEL_DATA } from "../types";
 import { SessionItem } from "./Common";
@@ -180,6 +180,7 @@ export const SidebarLeft = ({
                                                     <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
                                                         <button onClick={() => { createNewSession(undefined, 'sliding'); setShowNewChatMenu(false) }} className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 text-emerald-700 flex items-center gap-2"><Sparkles size={12} /> Story</button>
                                                         <button onClick={() => { createNewSession(undefined, 'infinite'); setShowNewChatMenu(false) }} className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2"><Terminal size={12} /> Infinite</button>
+                                                        <button onClick={() => { createNewSession(undefined, 'lime'); setShowNewChatMenu(false) }} className="w-full text-left px-3 py-2 text-xs hover:bg-green-50 text-green-600 flex items-center gap-2 border-t border-gray-50"><MessageCircle size={12} /> LIME Group</button>
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>

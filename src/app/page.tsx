@@ -20,6 +20,7 @@ import { CodeRepositoryModal } from "../components/CodeRepositoryPanel";
 import { TachieStage } from "../components/TachieStage";
 import { NovelInterface } from "../components/NovelInterface";
 import { EffectType } from "../components/TransitionEffects";
+import { LimeInterface } from "../components/LimeInterface";
 
 import { useMusic } from "../context/MusicContext";
 import { useLocalFileSync } from "../hooks/useLocalFileSync";
@@ -332,65 +333,91 @@ export default function Home() {
     if (currentSession?.memoryMode === 'novel') {
         return (
             <>
-            <NovelInterface
-                currentSession={currentSession}
-                handleSend={engine.handleSend}
-                isLoading={engine.isLoading}
-                createNewSession={createNewSession}
-                dbChars={CHAR_DATA}
-                stopGeneration={engine.stopGeneration}
-                handleRegenerate={engine.handleRegenerate}
-                apiProvider={apiProvider}
-                setApiProvider={setApiProvider}
-                useVideoGen={useVideoGen}
-                setUseVideoGen={setUseVideoGen}
-                videoModel={videoModel}
-                setVideoModel={setVideoModel}
-                drawEngine={drawEngine}
-                setDrawEngine={setDrawEngine}
-                setShowApiModal={setShowApiModal}
-                handleExportData={handleExportData}
-                useImageGen={config.imageGen}
-                toggleImageGen={() => setConfig(prev => ({ ...prev, imageGen: !prev.imageGen }))}
-                toggleVideoGen={() => setUseVideoGen(!useVideoGen)}
-                importInputRef={fileHandler.importInputRef}
-                setIsGlobalGenerating={setIsGlobalGenerating}
-                handleVisualCommand={engine.handleVisualCommand}
-                setPreviewImage={setPreviewImage}
-                onImageGenerated={async (base64: string, meta: any) => {
-                    const res = await fetch("/api/upload", {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ base64 })
-                    });
-                    const data = await res.json();
-                    if (data.url) {
-                        ui.showToast("💾 Image Saved Locally");
-                        return data.url;
-                    }
-                    return "";
-                }}
+                <NovelInterface
+                    currentSession={currentSession}
+                    handleSend={engine.handleSend}
+                    isLoading={engine.isLoading}
+                    createNewSession={createNewSession}
+                    dbChars={CHAR_DATA}
+                    stopGeneration={engine.stopGeneration}
+                    handleRegenerate={engine.handleRegenerate}
+                    apiProvider={apiProvider}
+                    setApiProvider={setApiProvider}
+                    useVideoGen={useVideoGen}
+                    setUseVideoGen={setUseVideoGen}
+                    videoModel={videoModel}
+                    setVideoModel={setVideoModel}
+                    drawEngine={drawEngine}
+                    setDrawEngine={setDrawEngine}
+                    setShowApiModal={setShowApiModal}
+                    handleExportData={handleExportData}
+                    useImageGen={config.imageGen}
+                    toggleImageGen={() => setConfig(prev => ({ ...prev, imageGen: !prev.imageGen }))}
+                    toggleVideoGen={() => setUseVideoGen(!useVideoGen)}
+                    importInputRef={fileHandler.importInputRef}
+                    setIsGlobalGenerating={setIsGlobalGenerating}
+                    handleVisualCommand={engine.handleVisualCommand}
+                    setPreviewImage={setPreviewImage}
+                    onImageGenerated={async (base64: string, meta: any) => {
+                        const res = await fetch("/api/upload", {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ base64 })
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                            ui.showToast("💾 Image Saved Locally");
+                            return data.url;
+                        }
+                        return "";
+                    }}
 
-                setSessions={cloud.setSessions}
-                onExit={() => {
-                    const lastReality = cloud.sessions.find(s => s.id !== currentSessionId && s.memoryMode !== 'novel');
+                    setSessions={cloud.setSessions}
+                    onExit={() => {
+                        const lastReality = cloud.sessions.find(s => s.id !== currentSessionId && s.memoryMode !== 'novel');
 
-                    if (lastReality) {
-                        setCurrentSessionId(lastReality.id);
-                        if (lastReality.characterId) setActiveCharacterId(lastReality.characterId);
-                        ui.showToast("Return to Reality...");
-                    } else {
-                        createNewSession(undefined, 'sliding');
-                        ui.showToast("Waking up...");
-                    }
-                }}
-                updateSessionTitle={(id: string, t: string) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, title: t } : s))}
-                deleteMessage={engine.handleDeleteMessage}
-                updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
-            />
+                        if (lastReality) {
+                            setCurrentSessionId(lastReality.id);
+                            if (lastReality.characterId) setActiveCharacterId(lastReality.characterId);
+                            ui.showToast("Return to Reality...");
+                        } else {
+                            createNewSession(undefined, 'sliding');
+                            ui.showToast("Waking up...");
+                        }
+                    }}
+                    updateSessionTitle={(id: string, t: string) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, title: t } : s))}
+                    deleteMessage={engine.handleDeleteMessage}
+                    updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
+                />
 
-            <ApiKeysModal isOpen={showApiModal} onClose={() => setShowApiModal(false)} />
-            <ImageViewerModal url={previewImage} onClose={() => setPreviewImage(null)} />
-        </>
+                <ApiKeysModal isOpen={showApiModal} onClose={() => setShowApiModal(false)} />
+                <ImageViewerModal url={previewImage} onClose={() => setPreviewImage(null)} />
+            </>
+        );
+    }
+
+    if (currentSession?.memoryMode === 'lime') {
+        return (
+            <>
+                <LimeInterface
+                    currentSession={currentSession}
+                    handleSend={engine.handleSend}
+                    input={engine.input}
+                    setInput={engine.setInput}
+                    isLoading={engine.isLoading}
+                    dbChars={CHAR_DATA}
+                    updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
+                    setSessions={cloud.setSessions}
+                    onExit={() => {
+                        const lastReality = cloud.sessions.find(s => s.id !== currentSessionId && s.memoryMode === 'sliding');
+                        if (lastReality) {
+                            setCurrentSessionId(lastReality.id);
+                            if (lastReality.characterId) setActiveCharacterId(lastReality.characterId);
+                        } else {
+                            createNewSession(undefined, 'sliding');
+                        }
+                    }}
+                />
+            </>
         );
     }
 

@@ -143,6 +143,10 @@ export const useChatEngine = ({
           globalWorldInfo,
           localWorldInfo: currentSession.localWorldInfo,
           memoryMode: currentSession.memoryMode || "sliding",
+
+          limeGroupId: currentSession.limeGroupId, 
+          limeTimeline: currentSession.limeTimeline,
+          
           stm: currentSession.stm,
           ltm: currentSession.ltm,
           timeline: currentSession.timeline,

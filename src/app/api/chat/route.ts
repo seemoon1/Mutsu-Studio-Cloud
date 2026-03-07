@@ -172,7 +172,11 @@ async function searchKnowledge(query: string) {
   return "";
 }
 
-async function injectWebSearch(prompt: string, messages: any[], tavilyKey: string) {
+async function injectWebSearch(
+  prompt: string,
+  messages: any[],
+  tavilyKey: string,
+) {
   try {
     const lastUserMsg = messages[messages.length - 1].content;
     let query = Array.isArray(lastUserMsg)
@@ -243,18 +247,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const allChars = CHAR_DATA.map(char => ({
-        ...char,
-        lore: LORE_LIBRARY[char.id] || "" 
+    const allChars = CHAR_DATA.map((char) => ({
+      ...char,
+      lore: LORE_LIBRARY[char.id] || "",
     }));
 
     const colorMapObj = {
-      "User": "#6A5ACD",
-      "用户": "#6A5ACD",
-      "System": "#000000",
+      User: "#6A5ACD",
+      用户: "#6A5ACD",
+      System: "#000000",
       ...allChars.reduce(
         (acc: any, c: any) => ({ ...acc, [c.name]: c.hex }),
-        {}
+        {},
       ),
     };
 
@@ -334,6 +338,41 @@ ${COLOR_INSTRUCTION}
       if (messages.length > MAX_HISTORY) {
         finalMessages = messages.slice(-MAX_HISTORY);
       }
+      
+    } else if (memoryMode === "lime") {
+      console.log("📱 Mode: LIME Group Chat");
+
+      const currentTimeline = body.limeTimeline || 6;
+      const groupId = body.limeGroupId || "mygo";
+
+      finalSystemPrompt += `
+=== 📱 LIME GROUP CHAT PROTOCOL ===
+[ROLE]: You are the group chat server. You must simulate a multi-character group chat based on the BanG Dream! universe.
+[CURRENT GROUP]: ${groupId === "mygo" ? "MyGO!!!!!" : "Ave Mujica / CRYCHIC"}
+[CURRENT TIMELINE]: Stage ${currentTimeline}[TIMELINE CONSTRAINTS (STRICT)]:
+- If Timeline is 1 (CRYCHIC Era): Sakiko is active, happy. Tomori is timid.
+- If Timeline is 3 (CRYCHIC Broken): Sakiko is MISSING (DO NOT output her). Soyo is ghosting or reading without replying.
+- If Timeline is 5 (Dead Group): Only Anon tries to keep it alive. Others ignore.
+- If Timeline is 6 (Reunited): Everyone interacts normally.[OUTPUT FORMAT (ABSOLUTE RULE)]:
+You must respond ONLY with a JSON array wrapped in <lime_chat> tags. 
+The array order dictates the chronological order of the messages.
+Never output raw text outside the tags!
+
+[JSON SCHEMA]:
+<lime_chat>[
+  { "charId": "anon", "text": "大家今天来不来呀？" },
+  { "charId": "taki", "text": "反正某人是不会来的。" },
+  { "charId": "tomori", "text": "那个..." }
+]
+</lime_chat>
+`;
+
+      const LIME_WINDOW = 6;
+      if (messages.length > LIME_WINDOW) {
+        finalMessages = [messages[0], ...messages.slice(-LIME_WINDOW)];
+      } else {
+        finalMessages = messages;
+      }
     } else if (memoryMode === "infinite") {
       console.log(`⚙️ Mode: Infinite Engineering`);
       let engineerPersona = `
@@ -386,8 +425,15 @@ ${COLOR_INSTRUCTION}
       finalSystemPrompt += VISUAL_INSTRUCTION;
       finalSystemPrompt += engineerPersona;
       if (useWebSearch) {
-          if (!tKey) throw new Error("Missing Tavily Search Key! 请在金库中配置联网密钥。");
-          finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages, tKey);
+        if (!tKey)
+          throw new Error(
+            "Missing Tavily Search Key! 请在金库中配置联网密钥。",
+          );
+        finalSystemPrompt = await injectWebSearch(
+          finalSystemPrompt,
+          messages,
+          tKey,
+        );
       }
 
       console.log("====== SYSTEM PROMPT SNAPSHOT ======");
@@ -430,13 +476,13 @@ ${COLOR_INSTRUCTION}
 
       const mainChar = allChars.find((c: any) => c.id === characterId);
       if (mainChar && mainChar.lore) {
-          activeLore += `=== [MAIN PERSONA: ${mainChar.name}] ===\n${mainChar.lore}\n\n`;
+        activeLore += `=== [MAIN PERSONA: ${mainChar.name}] ===\n${mainChar.lore}\n\n`;
       }
 
       allChars.forEach((char: any) => {
-        const triggerWords = char.keys || char.trigger_keys ||[];
+        const triggerWords = char.keys || char.trigger_keys || [];
         if (
-          char.id !== characterId && 
+          char.id !== characterId &&
           triggerWords.length > 0 &&
           triggerWords.some((k: string) => recentContext.includes(k))
         ) {
@@ -452,8 +498,15 @@ ${COLOR_INSTRUCTION}
       if (stm?.trim()) finalSystemPrompt += `[STM]:\n${stm}\n\n`;
 
       if (useWebSearch) {
-          if (!tKey) throw new Error("Missing Tavily Search Key! 请在金库中配置联网密钥。");
-          finalSystemPrompt = await injectWebSearch(finalSystemPrompt, messages, tKey);
+        if (!tKey)
+          throw new Error(
+            "Missing Tavily Search Key! 请在金库中配置联网密钥。",
+          );
+        finalSystemPrompt = await injectWebSearch(
+          finalSystemPrompt,
+          messages,
+          tKey,
+        );
       }
 
       if (useImageGen) {
