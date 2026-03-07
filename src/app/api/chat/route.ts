@@ -339,30 +339,56 @@ ${COLOR_INSTRUCTION}
         finalMessages = messages.slice(-MAX_HISTORY);
       }
       
-    } else if (memoryMode === "lime") {
-      console.log("📱 Mode: LIME Group Chat");
+    } else if (memoryMode === 'lime') {
+        console.log("📱 Mode: LIME Group Chat (Phase 3)");
+        
+        const timelineIdx = body.limeTimeline || 6; 
+        const groupId = body.limeGroupId || 'group';
+        const memberIds = body.limeGroupMembers || [];
 
-      const currentTimeline = body.limeTimeline || 6;
-      const groupId = body.limeGroupId || "mygo";
+        const TIMELINE_CONTEXTS: Record<number, string> = {
+            0: "Early Years. Everyone is young/childhood friends. No trauma yet.",
+            1: "CRYCHIC Era. Sakiko is the happy leader. Tomori is extremely shy. Soyo is acting like a mom.",
+            2: "The Breakup (Rainy Day). Sakiko has just quit. The group is in chaos. Soyo is desperate.",
+            3: "MyGO!!!!! Formed. Anon is trying to glue everyone together. Taki and Tomori have a bond.",
+            4: "Spring Sunlight (Haruhikage). Major conflict. Sakiko is watching from shadows (Oblivionis). Soyo is broken.",
+            5: "It's MyGO!!!!! (Reunited). The band is solid. Anon is the heart.",
+            6: "Ave Mujica Era. Sakiko is cold/ruthless. Mutsu is silent. The masks are on.",
+            7: "Ave Mujica Collapse. (Hypothetical scenario).",
+            8: "Reconciliation. All conflicts resolved.",
+            9: "Future. Adult life."
+        };
 
-      finalSystemPrompt += `
+        const timeContext = TIMELINE_CONTEXTS[timelineIdx] || "Unknown Timeline";
+
+        let groupLore = "";
+        memberIds.forEach((mid: string) => {
+            const char = CHAR_DATA.find(c => c.id === mid);
+            const lore = LORE_LIBRARY[mid] || char?.lore || "";
+            if (char) {
+                groupLore += `--- [Character: ${char.name}] ---\n${lore}\n[Current State]: Based on Timeline ${timelineIdx}.\n\n`;
+            }
+        });
+
+        finalSystemPrompt += `
 === 📱 LIME GROUP CHAT PROTOCOL ===
-[ROLE]: You are the group chat server. You must simulate a multi-character group chat based on the BanG Dream! universe.
-[CURRENT GROUP]: ${groupId === "mygo" ? "MyGO!!!!!" : "Ave Mujica / CRYCHIC"}
-[CURRENT TIMELINE]: Stage ${currentTimeline}[TIMELINE CONSTRAINTS (STRICT)]:
-- If Timeline is 1 (CRYCHIC Era): Sakiko is active, happy. Tomori is timid.
-- If Timeline is 3 (CRYCHIC Broken): Sakiko is MISSING (DO NOT output her). Soyo is ghosting or reading without replying.
-- If Timeline is 5 (Dead Group): Only Anon tries to keep it alive. Others ignore.
-- If Timeline is 6 (Reunited): Everyone interacts normally.[OUTPUT FORMAT (ABSOLUTE RULE)]:
-You must respond ONLY with a JSON array wrapped in <lime_chat> tags. 
-The array order dictates the chronological order of the messages.
-Never output raw text outside the tags!
+[ROLE]: You are the server simulating a group chat.
+[CURRENT TIMELINE (${timelineIdx})]: ${timeContext}
+[MEMBERS IN CHAT]: ${memberIds.join(', ')}
+
+[CHARACTER LORE & STATES]:
+${groupLore}
+
+[INSTRUCTION]:
+1. Simulate the conversation based strictly on the Timeline Context. 
+   - Example: If Timeline is 2 or 3, Sakiko should NOT speak in the "MyGO" group (she left).
+   - Example: If Timeline is 4, Soyo should be passive-aggressive or silent.
+2. Output JSON array ONLY.
 
 [JSON SCHEMA]:
 <lime_chat>[
-  { "charId": "anon", "text": "大家今天来不来呀？" },
-  { "charId": "taki", "text": "反正某人是不会来的。" },
-  { "charId": "tomori", "text": "那个..." }
+  { "charId": "anon", "text": "Content..." },
+  { "charId": "taki", "text": "Content..." }
 ]
 </lime_chat>
 `;

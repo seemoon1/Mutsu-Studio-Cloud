@@ -71,9 +71,8 @@ export type Session = {
   localWorldInfo?: string;
   
   memoryMode?: 'infinite' | 'sliding' | 'novel' | 'lime'; 
-
-  limeGroupId?: string;
-  limeTimeline?: number;
+  
+  limeGroups?: LimeChatGroup[];
   
   stm?: string;
   stmBackup?: string; 
@@ -92,6 +91,25 @@ export type Session = {
   currentBackground?: string; 
   currentOutfitId?: string;   
   live2dCharId?: string;      
+};
+
+export type LimeGroupType = 'duo' | 'group';
+export type LimePOV = 'outsider' | 'insider';
+export type LimeReality = 'canon' | 'au';
+
+export type LimeChatGroup = {
+    id: string;
+    name: string;
+    type: LimeGroupType;
+    pov: LimePOV;
+    reality: LimeReality;
+    timeline: number;
+    members: string[];
+    defaultPovChar?: string;
+    isBlocked?: boolean;
+    messages: any[];
+    createdAt: number;
+    updatedAt: number;
 };
 
 export type ChatFolder = { id: string; name: string; isExpanded: boolean; };

@@ -9,7 +9,7 @@ import {
     Save, Terminal, ClipboardList, Guitar, Image as ImageIcon, Shirt,
     Disc, ChevronUp, MoreHorizontal, Settings,
     ToggleLeft, ToggleRight, Skull, Binary, CloudRain, AlertTriangle,
-    Clapperboard, Film
+    Clapperboard, Film, MessageCircle
 } from "lucide-react";
 import { ThinkingBlock } from "./Common";
 import { CHARACTERS } from "../types";
@@ -607,6 +607,14 @@ export const ChatInterface = ({
                             )}
                         </button>
                     </div>
+
+                    <button
+                        onClick={() => createNewSession('system', 'lime')}
+                        className="p-2 hover:bg-emerald-50 rounded text-emerald-500 hover:text-emerald-600 transition-colors"
+                        title="Enter LIME Network"
+                    >
+                        <MessageCircle size={18} />
+                    </button>
 
                     <button
                         onClick={() => createNewSession(currentCharacter.id, 'novel')}

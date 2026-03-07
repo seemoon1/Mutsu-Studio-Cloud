@@ -146,6 +146,7 @@ export const useChatEngine = ({
 
           limeGroupId: currentSession.limeGroupId, 
           limeTimeline: currentSession.limeTimeline,
+          limeGroupMembers: currentSession.limeGroups?.find((g: any) => g.id === currentSession.limeGroupId)?.members,
           
           stm: currentSession.stm,
           ltm: currentSession.ltm,
