@@ -432,7 +432,8 @@ Make the chat natural, highly immersive, and lively.
 
 <lime_chat>[
   { "charId": "anon", "text": "大家今天来不来呀？🥺" },
-  { "charId": "soyo", "text": "Don't ever message me again. 💢" }
+  { "charId": "soyo", "text": "Don't ever message me again. 💢" },
+  { "charId": "system", "text": "[SYSTEM]: You have been blocked." }
 ]
 </lime_chat>
 `;

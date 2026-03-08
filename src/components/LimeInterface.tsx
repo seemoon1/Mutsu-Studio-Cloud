@@ -471,23 +471,30 @@ export const LimeInterface = ({
 
                 <div onClick={() => { setShowMemory(false); setShowMemberManage(false); setShowModelMenu(false); }} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide pb-20 relative z-0">
                     {activeGroup?.messages?.map((msg: any, i: number) => {
+                        
                         if (msg.role === 'user') {
                             const text = typeof msg.content === 'string' ? msg.content : msg.content[0]?.text || "";
                             if (!text) return null;
+                            
+                            if (activeGroup.type === 'duo') {
+                                const cleanText = text.replace("(Director's Instruction: ", "").replace(")", "");
+                                return (
+                                    <div key={i} className="group/msg flex justify-center animate-fade-in-up w-full my-2 relative">
+                                        <div className="absolute left-4 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity">
+                                            <button onClick={() => handleDeleteMessage(activeGroupId, i)} className="p-1 text-gray-400 hover:text-red-500 bg-white/80 rounded-full shadow-sm border border-gray-100"><Trash2 size={12} /></button>
+                                        </div>
+                                        <div className="bg-black/10 px-4 py-1.5 rounded-full text-[10px] text-gray-500 font-bold flex items-center gap-1 shadow-inner">
+                                            🎬 导演指令: {cleanText}
+                                        </div>
+                                    </div>
+                                );
+                            }
 
                             return (
-                                <div key={i} className="group/msg flex gap-2 items-end justify-end animate-fade-in-up w-full">
-
-                                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity order-first mr-2">
-                                        <button
-                                            onClick={() => handleDeleteMessage(activeGroupId, i)}
-                                            className="p-1.5 text-gray-400 hover:text-red-500 bg-gray-100/80 rounded-full shadow-sm"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={12} />
-                                        </button>
+                                <div key={i} className="group/msg flex gap-2 items-end justify-end animate-fade-in-up w-full relative">
+                                    <div className="absolute right-[80%] opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity mr-2">
+                                        <button onClick={() => handleDeleteMessage(activeGroupId, i)} className="p-1.5 text-gray-400 hover:text-red-500 bg-gray-100/80 rounded-full shadow-sm"><Trash2 size={12} /></button>
                                     </div>
-
                                     <div className="flex flex-col gap-1 max-w-[75%] items-end">
                                         <div className="text-gray-900 px-3 py-2 text-[14px] font-medium leading-relaxed shadow-sm rounded-2xl rounded-tr-sm break-words" style={{ backgroundColor: LIME_BUBBLE_ME }}>
                                             {text}
@@ -500,54 +507,58 @@ export const LimeInterface = ({
 
                         if (msg.role === 'assistant' && msg.content) {
                             const chatArray = parseLimeChat(msg.content);
-
+                            
                             return (
-                                <div key={i} className="group/msg flex flex-col gap-2 w-full">
+                                <div key={i} className="group/msg flex flex-col gap-2 w-full relative">
+                                    
+                                    <div className="absolute top-1/2 -translate-y-1/2 right-0 md:-right-10 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 flex flex-col gap-1 transition-opacity z-10">
+                                        {i === activeGroup.messages.length - 1 && (
+                                            <button onClick={() => handleRegenerate(activeGroupId)} className="p-1.5 text-gray-400 hover:text-blue-500 bg-white/90 rounded-full shadow-sm border border-gray-100"><RefreshCcw size={12} /></button>
+                                        )}
+                                        <button onClick={() => handleDeleteMessage(activeGroupId, i)} className="p-1.5 text-gray-400 hover:text-red-500 bg-white/90 rounded-full shadow-sm border border-gray-100"><Trash2 size={12} /></button>
+                                    </div>
+
                                     {chatArray.map((chatObj: any, idx: number) => {
-                                        const charInfo = dbChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "System", avatar: "👤", hex: "#cccccc" };
-                                        const isLastItem = idx === chatArray.length - 1;
+                                        if (chatObj.charId === 'system') {
+                                            return <div key={idx} className="text-center text-[10px] text-gray-400 font-bold my-2 bg-black/5 w-fit mx-auto px-3 py-1 rounded-full">{chatObj.text}</div>;
+                                        }
 
-                                        return (
-                                            <div key={`${i}-${idx}`} className="flex gap-2 items-start animate-fade-in-up relative">
-                                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm border border-black/5" style={{ backgroundColor: charInfo.hex }}>
-                                                    {charInfo.avatar}
-                                                </div>
+                                        const isPovOwner = chatObj.charId === activeGroup.defaultPovChar;
+                                        const charInfo = dbChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "User", avatar: "👤", hex: "#cccccc" };
 
-                                                <div className="flex flex-col gap-1 max-w-[70%]">
-                                                    <span className="text-[10px] text-gray-600 ml-1 font-bold">{charInfo.name}</span>
-                                                    <div className="bg-white text-gray-900 font-medium px-3 py-2 text-[14px] leading-relaxed shadow-sm rounded-2xl rounded-tl-sm break-words border border-black/5">
-                                                        {chatObj.text}
+                                        if (isPovOwner) {
+                                            return (
+                                                <div key={`${i}-${idx}`} className="flex gap-2 items-end justify-end animate-fade-in-up w-full mt-1">
+                                                    <div className="flex flex-col gap-1 max-w-[75%] items-end">
+                                                        <div className="text-gray-900 px-3 py-2 text-[14px] font-medium leading-relaxed shadow-sm rounded-2xl rounded-tr-sm break-words" style={{ backgroundColor: LIME_BUBBLE_ME }}>
+                                                            {chatObj.text}
+                                                        </div>
+                                                        <span className="text-[9px] text-gray-400 mr-1">Read</span>
                                                     </div>
                                                 </div>
-
-                                                {isLastItem && (
-                                                    <div className="flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity ml-1 mt-6">
-                                                        {i === activeGroup.messages.length - 1 && (
-                                                            <button
-                                                                onClick={() => handleRegenerate(activeGroupId)}
-                                                                className="p-1.5 text-gray-400 hover:text-blue-500 bg-white/80 rounded-full shadow-sm border border-gray-100"
-                                                                title="Regenerate"
-                                                            >
-                                                                <RefreshCcw size={12} />
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleDeleteMessage(activeGroupId, i)}
-                                                            className="p-1.5 text-gray-400 hover:text-red-500 bg-white/80 rounded-full shadow-sm border border-gray-100"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={12} />
-                                                        </button>
+                                            );
+                                        } 
+                                        
+                                        else {
+                                            return (
+                                                <div key={`${i}-${idx}`} className="flex gap-2 items-start animate-fade-in-up mt-1 relative pr-8 md:pr-0">
+                                                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm border border-black/5" style={{ backgroundColor: charInfo.hex }}>{charInfo.avatar}</div>
+                                                    <div className="flex flex-col gap-1 max-w-[75%]">
+                                                        {activeGroup.type === 'group' && <span className="text-[10px] text-gray-600 ml-1 font-bold">{charInfo.name}</span>}
+                                                        <div className="bg-white text-gray-900 font-medium px-3 py-2 text-[14px] leading-relaxed shadow-sm rounded-2xl rounded-tl-sm break-words border border-black/5">
+                                                            {chatObj.text}
+                                                        </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        );
+                                                </div>
+                                            );
+                                        }
                                     })}
                                 </div>
                             );
                         }
                         return null;
                     })}
+
                     {isLoading && (
                         <div className="flex gap-2 items-start animate-fade-in-up">
                             <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center shrink-0"><Loader2 size={14} className="text-white animate-spin" /></div>
