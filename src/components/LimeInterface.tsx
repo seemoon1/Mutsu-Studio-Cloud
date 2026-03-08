@@ -254,8 +254,8 @@ export const LimeInterface = ({
                                                     onClick={() => !isDisabled && toggleMember(c.id)}
                                                     disabled={isDisabled}
                                                     className={`p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isDisabled ? 'bg-gray-200 border-gray-300 opacity-30 cursor-not-allowed grayscale' :
-                                                            isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm' :
-                                                                'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
+                                                        isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm' :
+                                                            'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
                                                         }`}
                                                 >
                                                     <span className="text-2xl drop-shadow-sm">{c.avatar}</span>
@@ -283,9 +283,11 @@ export const LimeInterface = ({
                                             className="w-full bg-white border-2 border-gray-300 rounded-xl p-3 text-sm font-bold text-gray-900 outline-none focus:border-emerald-500"
                                         >
                                             <option value="outsider">Outsider (Director / 导演模式)</option>
-                                            <option value="insider">Insider (Actor / 演员模式)</option>
+                                            {selectedMembers.length !== 2 && <option value="insider">Insider (Roleplay / 沉浸模式)</option>}
                                         </select>
+                                        {selectedMembers.length === 2 && <p className="text-[10px] text-orange-500 mt-1 font-bold">* Duo Mode is locked to Director View (Peeking).</p>}
                                     </div>
+
 
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
