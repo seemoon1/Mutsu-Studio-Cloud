@@ -404,12 +404,17 @@ Or:
       finalSystemPrompt += `
 [OUTPUT FORMAT]:
 You MUST return ONLY a JSON array wrapped in <lime_chat>.
+Make the chat natural, highly immersive, and lively. 
+⚠️ You are HIGHLY ENCOURAGED to use emojis (🥺, 💢, ✨, 🎸, etc.) in the "text" field to express emotions and simulate real smartphone chatting habits!
+
 <lime_chat>[
-  { "charId": "soyo", "text": "Don't ever message me again." },
+  { "charId": "anon", "text": "大家今天来不来呀？🥺" },
+  { "charId": "soyo", "text": "Don't ever message me again. 💢" },
   { "charId": "system", "text": "[SYSTEM]: You have been blocked." }
 ]
 </lime_chat>
 `;
+
       const LIME_WINDOW = 6;
       if (messages.length > LIME_WINDOW) {
         finalMessages = [messages[0], ...messages.slice(-LIME_WINDOW)];

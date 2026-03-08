@@ -27,6 +27,7 @@ import { useLocalFileSync } from "../hooks/useLocalFileSync";
 import { useChatEngine } from "../hooks/useChatEngine";
 import { useUI } from "../hooks/useUI";
 import { useFileHandler } from "../hooks/useFileHandler";
+import { useLimeEngine } from "../hooks/useLimeEngine";
 
 const Live2DStage = dynamic(() => import("../components/Live2DStage").then(m => m.Live2DStage), { ssr: false });
 
@@ -96,6 +97,13 @@ export default function Home() {
         manualOutfitId,
         apiProvider,
         setEffect: ui.setEffect
+    });
+
+    const limeEngine = useLimeEngine({
+        currentSession, 
+        setSessions: cloud.setSessions,
+        apiProvider,
+        showToast: ui.showToast
     });
 
     const fileHandler = useFileHandler({
@@ -400,10 +408,10 @@ export default function Home() {
             <>
                 <LimeInterface
                     currentSession={currentSession}
-                    handleSend={engine.handleSend}
-                    input={engine.input}
-                    setInput={engine.setInput}
-                    isLoading={engine.isLoading}
+                    handleSend={limeEngine.handleSend}
+                    input={limeEngine.input}
+                    setInput={limeEngine.setInput}
+                    isLoading={limeEngine.isLoading}
                     dbChars={CHAR_DATA}
                     updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
                     setSessions={cloud.setSessions}

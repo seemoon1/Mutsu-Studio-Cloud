@@ -61,11 +61,28 @@ export const LimeInterface = ({
     };
 
     const handleCreateGroup = () => {
-        if (!newGroupName) return;
+        if (!newGroupName || selectedMembers.length === 0) { /* ... */ return; }
+
+        const isDuo = selectedMembers.length === 2;
+        const type = isDuo ? 'duo' : 'group';
+
+        const defaultPov = isDuo ? selectedMembers[0] : undefined;
+
+        const finalPov = isDuo ? 'outsider' : newGroupPov;
+
         const newGroup: LimeChatGroup = {
-            id: uuidv4(), name: newGroupName, type: selectedMembers.length > 1 ? 'group' : 'duo',
-            pov: newGroupPov, reality: 'canon', timeline: newGroupTimeline, members: selectedMembers,
-            messages: [], createdAt: Date.now(), updatedAt: Date.now(),
+            id: uuidv4(),
+            name: newGroupName,
+            type: type,
+            pov: finalPov,
+            reality: newGroupReality,
+            auContext: newGroupAuContext,
+            timeline: newGroupTimeline,
+            members: selectedMembers,
+            defaultPovChar: defaultPov,
+            messages: [],
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
         };
         updateSessionInfo(currentSession.id, { limeGroups: [newGroup, ...limeGroups] });
         setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setActiveGroupId(newGroup.id);
@@ -128,64 +145,99 @@ export const LimeInterface = ({
 
                     <div className="w-2/3 bg-white p-8 flex flex-col overflow-y-auto">
                         {isCreating ? (
-                            <div className="max-w-xl mx-auto w-full animate-fade-in-up">
-                                <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2"><Settings className="text-emerald-500" /> Configure New Link</h2>
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Group Name / 名称</label>
-                                        <input value={newGroupName} onChange={e => setNewGroupName(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-500 transition-colors" placeholder="e.g. MyGO Emergency Meeting" />
-                                    </div>
+                            <div className="max-w-xl mx-auto w-full animate-fade-in-up space-y-6">
+                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                                    <Settings className="text-emerald-600" /> Configure New Link
+                                </h2>
 
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Members / 成员</label>
-                                        <div className="grid grid-cols-4 gap-3">
-                                            {dbChars.map((c: any) => (
-                                                <button key={c.id} onClick={() => toggleMember(c.id)} className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${selectedMembers.includes(c.id) ? 'bg-emerald-50 border-emerald-500 text-emerald-700 ring-1 ring-emerald-200' : 'bg-white border-gray-200 grayscale opacity-60 hover:grayscale-0 hover:opacity-100'}`}>
-                                                    <span className="text-2xl">{c.avatar}</span>
-                                                    <span className="text-[10px] font-bold truncate w-full text-center">{c.name}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"><Globe size={12} className="inline mr-1" />Mode / 模式</label>
-                                            <select value={newGroupPov} onChange={(e: any) => setNewGroupPov(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-500">
-                                                <option value="outsider">Outsider (Director Mode / 导演)</option>
-                                                <option value="insider">Insider (Roleplay Mode / 参演)</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"><Clock size={12} className="inline mr-1" />Timeline / 时间点</label>
-                                            {newGroupReality === 'canon' ? (
-                                                <select value={newGroupTimeline} onChange={(e: any) => setNewGroupTimeline(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-mono text-xs">
-                                                    {TIMELINE_OPTIONS.map(opt => (
-                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                <textarea
-                                                    value={newGroupAuContext}
-                                                    onChange={e => setNewGroupAuContext(e.target.value)}
-                                                    placeholder="输入架空设定，例如：CRYCHIC 从未解散..."
-                                                    className="w-full bg-orange-50 border border-orange-200 rounded-xl p-2 text-xs outline-none"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <button onClick={handleCreateGroup} className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg mt-4 flex items-center justify-center gap-2">
-                                        <Send size={18} /> Establish Connection
-                                    </button>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-900 uppercase tracking-wider block mb-2">Group Name / 名称</label>
+                                    <input
+                                        value={newGroupName}
+                                        onChange={e => setNewGroupName(e.target.value)}
+                                        className="w-full bg-white border-2 border-gray-300 rounded-xl p-3 text-gray-900 font-bold outline-none focus:border-emerald-500 focus:bg-emerald-50/30 transition-all placeholder-gray-400"
+                                        placeholder="e.g. MyGO Emergency Meeting"
+                                    />
                                 </div>
+
+                                <div>
+                                    <label className="text-xs font-bold text-gray-900 uppercase tracking-wider block mb-2">
+                                        Members / 成员 ({selectedMembers.length})
+                                    </label>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {dbChars.map((c: any) => {
+                                            const isSelected = selectedMembers.includes(c.id);
+                                            return (
+                                                <button
+                                                    key={c.id}
+                                                    onClick={() => toggleMember(c.id)}
+                                                    className={`p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isSelected
+                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm'
+                                                        : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
+                                                        }`}
+                                                >
+                                                    <span className="text-2xl drop-shadow-sm">{c.avatar}</span>
+                                                    <span className="text-[11px] font-bold truncate w-full text-center">{c.name}</span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-900 uppercase tracking-wider block mb-2 flex items-center gap-2">
+                                            <Globe size={14} /> Mode / 观测模式
+                                        </label>
+                                        <select
+                                            value={newGroupPov}
+                                            onChange={(e: any) => setNewGroupPov(e.target.value)}
+                                            disabled={selectedMembers.length === 2}
+                                            className={`w-full border-2 rounded-xl p-3 text-sm font-bold outline-none ${selectedMembers.length === 2
+                                                ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+                                                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500'
+                                                }`}
+                                        >
+                                            <option value="outsider">Outsider (Director / 导演模式)</option>
+                                            {selectedMembers.length !== 2 && <option value="insider">Insider (Roleplay / 沉浸模式)</option>}
+                                        </select>
+                                        {selectedMembers.length === 2 && <p className="text-[10px] text-orange-500 mt-1 font-bold">* Duo Mode is locked to Director View (Peeking).</p>}
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                                                <Clock size={14} /> Timeline / 世界线
+                                            </label>
+                                            <div className="flex bg-gray-200 p-0.5 rounded-lg">
+                                                <button onClick={() => setNewGroupReality('canon')} className={`px-2 py-0.5 text-[10px] font-bold rounded ${newGroupReality === 'canon' ? 'bg-white text-gray-900 shadow' : 'text-gray-500'}`}>Canon</button>
+                                                <button onClick={() => setNewGroupReality('au')} className={`px-2 py-0.5 text-[10px] font-bold rounded ${newGroupReality === 'au' ? 'bg-purple-500 text-white shadow' : 'text-gray-500'}`}>AU</button>
+                                            </div>
+                                        </div>
+
+                                        {newGroupReality === 'canon' ? (
+                                            <select value={newGroupTimeline} onChange={(e: any) => setNewGroupTimeline(e.target.value)} className="w-full bg-white border-2 border-gray-300 rounded-xl p-3 text-sm font-bold text-gray-900 outline-none focus:border-emerald-500">
+                                                {TIMELINE_OPTIONS.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                                            </select>
+                                        ) : (
+                                            <textarea
+                                                value={newGroupAuContext}
+                                                onChange={e => setNewGroupAuContext(e.target.value)}
+                                                className="w-full bg-purple-50 border-2 border-purple-200 rounded-xl p-3 text-sm font-bold text-purple-900 outline-none focus:border-purple-500 resize-none h-24"
+                                                placeholder="在此输入架空世界设定 (例如：丰川祥子从未离开 CRYCHIC...)"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                <button onClick={handleCreateGroup} className="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-black text-lg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 transform active:scale-95">
+                                    <Send size={20} /> Establish Connection
+                                </button>
                             </div>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-gray-300 select-none">
-                                <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                                    <Smartphone size={64} className="opacity-20" />
-                                </div>
-                                <p className="font-bold tracking-widest uppercase text-sm">Select a group to start chatting</p>
+                                <Smartphone size={80} className="opacity-20 mb-6" />
+                                <p className="font-black tracking-[0.2em] uppercase text-sm text-gray-400">Select or Create a Frequency</p>
                             </div>
                         )}
                     </div>
@@ -207,37 +259,48 @@ export const LimeInterface = ({
             <div className="w-full h-full sm:w-[420px] sm:h-[850px] sm:rounded-[50px] sm:border-[14px] sm:border-black overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]" style={{ backgroundColor: LIME_BG }} onClick={e => e.stopPropagation()}>
 
                 <div className="bg-[#2B2C2E] text-white px-4 py-3 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between shrink-0 z-20 shadow-md relative">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <button onClick={() => setActiveGroupId(null)} className="hover:bg-white/10 p-1 rounded-full transition-colors shrink-0"><ChevronLeft size={24} /></button>
+                    <div className="flex flex-col min-w-0 flex-1">
+                        {isRenaming ? (
+                            <input
+                                autoFocus
+                                value={renameText}
+                                onChange={e => setRenameText(e.target.value)}
+                                onBlur={handleRenameGroup}
+                                onKeyDown={e => e.key === 'Enter' && handleRenameGroup()}
+                                className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]"
+                            />
+                        ) : (
+                            <div
+                                className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`}
+                                onClick={() => {
+                                    if (activeGroup?.type === 'group') {
+                                        setIsRenaming(true);
+                                        setRenameText(activeGroup?.name || "");
+                                    }
+                                }}
+                            >
+                                <span className="font-bold text-[15px] truncate max-w-[130px]">{displayTitle}</span>
+                                {activeGroup?.type === 'group' && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 text-gray-400" />}
+                            </div>
+                        )}
 
-                        <div className="flex flex-col min-w-0 flex-1">
-                            {isRenaming ? (
-                                <input
-                                    autoFocus value={renameText} onChange={e => setRenameText(e.target.value)}
-                                    onBlur={handleRenameGroup} onKeyDown={e => e.key === 'Enter' && handleRenameGroup()}
-                                    className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]"
-                                />
+                        <span className="text-[10px] text-white/50 truncate flex items-center gap-1">
+                            {activeGroup?.type === 'duo' ? (
+                                <>
+                                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                                    POV: {dbChars.find((c: any) => c.id === activeGroup.defaultPovChar)?.name}
+                                </>
                             ) : (
-                                <div
-                                    className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`}
-                                    onClick={() => {
-                                        if (activeGroup?.type === 'group') {
-                                            setIsRenaming(true);
-                                            setRenameText(activeGroup?.name || "");
-                                        }
-                                    }}
-                                >
-                                    <span className="font-bold text-[15px] truncate max-w-[130px]">{displayTitle}</span>
-                                    {activeGroup?.type === 'group' && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 text-gray-400" />}
-                                </div>
+                                <>{activeGroup?.members.length} members • {activeGroup?.reality === 'au' ? 'AU World' : `T-${activeGroup?.timeline}`}</>
                             )}
-                            <span className="text-[10px] text-white/50 truncate">{activeGroup?.members.length} members • T-{activeGroup?.timeline}</span>
-                        </div>
+                        </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-gray-300 shrink-0">
+                    <div className="flex items-center gap-3 text-gray-300 shrink-0 ml-2">
                         <button onClick={() => { setShowMemory(!showMemory); setShowMemberManage(false); setShowModelMenu(false); }} className={`transition-colors ${showMemory ? 'text-[#32CC70]' : 'hover:text-white'}`}><Brain size={20} /></button>
-                        <button onClick={() => { setShowMemberManage(!showMemberManage); setShowMemory(false); setShowModelMenu(false); }} className={`transition-colors ${showMemberManage ? 'text-[#32CC70]' : 'hover:text-white'}`}><Users size={20} /></button>
+                        {activeGroup?.type === 'group' && (
+                            <button onClick={() => { setShowMemberManage(!showMemberManage); setShowMemory(false); setShowModelMenu(false); }} className={`transition-colors ${showMemberManage ? 'text-[#32CC70]' : 'hover:text-white'}`}><Users size={20} /></button>
+                        )}
                         <button onClick={() => { setShowModelMenu(!showModelMenu); setShowMemory(false); setShowMemberManage(false); }} className={`transition-colors ${showModelMenu ? 'text-[#32CC70]' : 'hover:text-white'}`}><Menu size={24} /></button>
                     </div>
                 </div>
@@ -315,7 +378,7 @@ export const LimeInterface = ({
                 </AnimatePresence>
 
                 <div onClick={() => { setShowMemory(false); setShowMemberManage(false); setShowModelMenu(false); }} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide pb-20 relative z-0">
-                    {currentSession?.messages.map((msg: any, i: number) => {
+                    {activeGroup?.messages?.map((msg: any, i: number) => {
                         if (msg.role === 'user') {
                             const text = typeof msg.content === 'string' ? msg.content : msg.content[0]?.text || "";
                             if (!text) return null;
