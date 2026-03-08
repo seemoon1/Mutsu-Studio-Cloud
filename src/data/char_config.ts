@@ -16,6 +16,13 @@ export type CharConfig = {
 };
 
 export const CHAR_DATA: CharConfig[] = [
+  // === User ===
+  {
+    id: "user", name: "月", sub: "Director / Actor", hex: "#6A5ACD", avatar: "🌙",
+    keys:["User", "月", "我"], 
+    baseStats: { Obsession: 0 }
+  },
+  
   // === MyGO!!!!! ===
   {
     id: "tomori", name: "高松 灯", sub: "MyGO!!!!!", hex: "#3498db", avatar: "🐧",

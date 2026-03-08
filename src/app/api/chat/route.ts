@@ -387,17 +387,28 @@ ${COLOR_INSTRUCTION}
 === 📱 LIME CHAT ENGINE ===
 [ROLE]: You are the server backend rendering a simulated chat app.
 [WORLD RULE]: ${currentWorldRule}
-${groupNameHeader}
-
-[CHARACTER LORE]:
+${groupNameHeader}[CHARACTER LORE]:
 ${groupLore}
-
 [CRITICAL RULE FOR "charId" FIELD]:
 When generating the JSON output, the "charId" field MUST strictly match one of these exact IDs:[${allowedIdsList}], or "system". 
-DO NOT invent IDs or use romaji names. Violating this will crash the frontend rendering!
 
 [MODE INSTRUCTION]:
 `;
+
+      if (body.limePov === "outsider") {
+        finalSystemPrompt += `
+[DIRECTOR MODE (Outsider)]: 
+The User is NOT in this chat. The User's input is a **DIRECTOR'S OUTLINE / SYSTEM COMMAND**. 
+You must generate the natural progression of the chat between the group members based on this outline. 
+DO NOT reply to the user. Make the characters talk to EACH OTHER.
+`;
+      } else {
+        finalSystemPrompt += `[ACTOR MODE (Insider)]: 
+The User ("user" / 月) IS AN ACTIVE PARTICIPANT in this chat. 
+The User's input is their actual chat message sent to the group.
+You must generate responses from the OTHER members reacting naturally to the User's message and to each other.
+`;
+      }
 
       if (groupType === "duo") {
         const povName =

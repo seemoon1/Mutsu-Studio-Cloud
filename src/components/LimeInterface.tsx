@@ -82,7 +82,7 @@ export const LimeInterface = ({
         const isDuo = selectedMembers.length === 2;
         const type = isDuo ? 'duo' : 'group';
         const defaultPov = isDuo ? selectedMembers[0] : undefined;
-        const finalPov = isDuo ? 'outsider' : newGroupPov;
+        const finalPov = newGroupPov;
 
         let finalGroupName = newGroupName.trim();
 
@@ -245,13 +245,17 @@ export const LimeInterface = ({
                                     <div className="grid grid-cols-4 gap-3">
                                         {dbChars.map((c: any) => {
                                             const isSelected = selectedMembers.includes(c.id);
+                                            const isUser = c.id === 'user';
+                                            const isDisabled = isUser && newGroupPov === 'outsider';
+
                                             return (
                                                 <button
                                                     key={c.id}
-                                                    onClick={() => toggleMember(c.id)}
-                                                    className={`p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isSelected
-                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
+                                                    onClick={() => !isDisabled && toggleMember(c.id)}
+                                                    disabled={isDisabled}
+                                                    className={`p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isDisabled ? 'bg-gray-200 border-gray-300 opacity-30 cursor-not-allowed grayscale' :
+                                                            isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm' :
+                                                                'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
                                                         }`}
                                                 >
                                                     <span className="text-2xl drop-shadow-sm">{c.avatar}</span>
@@ -269,17 +273,18 @@ export const LimeInterface = ({
                                         </label>
                                         <select
                                             value={newGroupPov}
-                                            onChange={(e: any) => setNewGroupPov(e.target.value)}
-                                            disabled={selectedMembers.length === 2}
-                                            className={`w-full border-2 rounded-xl p-3 text-sm font-bold outline-none ${selectedMembers.length === 2
-                                                ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
-                                                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500'
-                                                }`}
+                                            onChange={(e: any) => {
+                                                const mode = e.target.value;
+                                                setNewGroupPov(mode);
+                                                if (mode === 'outsider') {
+                                                    setSelectedMembers(prev => prev.filter(m => m !== 'user'));
+                                                }
+                                            }}
+                                            className="w-full bg-white border-2 border-gray-300 rounded-xl p-3 text-sm font-bold text-gray-900 outline-none focus:border-emerald-500"
                                         >
                                             <option value="outsider">Outsider (Director / 导演模式)</option>
-                                            {selectedMembers.length !== 2 && <option value="insider">Insider (Roleplay / 沉浸模式)</option>}
+                                            <option value="insider">Insider (Actor / 演员模式)</option>
                                         </select>
-                                        {selectedMembers.length === 2 && <p className="text-[10px] text-orange-500 mt-1 font-bold">* Duo Mode is locked to Director View (Peeking).</p>}
                                     </div>
 
                                     <div>
@@ -471,11 +476,11 @@ export const LimeInterface = ({
 
                 <div onClick={() => { setShowMemory(false); setShowMemberManage(false); setShowModelMenu(false); }} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide pb-20 relative z-0">
                     {activeGroup?.messages?.map((msg: any, i: number) => {
-                        
+
                         if (msg.role === 'user') {
                             const text = typeof msg.content === 'string' ? msg.content : msg.content[0]?.text || "";
                             if (!text) return null;
-                            
+
                             if (activeGroup.type === 'duo') {
                                 const cleanText = text.replace("(Director's Instruction: ", "").replace(")", "");
                                 return (
@@ -507,10 +512,10 @@ export const LimeInterface = ({
 
                         if (msg.role === 'assistant' && msg.content) {
                             const chatArray = parseLimeChat(msg.content);
-                            
+
                             return (
                                 <div key={i} className="group/msg flex flex-col gap-2 w-full relative">
-                                    
+
                                     <div className="absolute top-1/2 -translate-y-1/2 right-0 md:-right-10 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 flex flex-col gap-1 transition-opacity z-10">
                                         {i === activeGroup.messages.length - 1 && (
                                             <button onClick={() => handleRegenerate(activeGroupId)} className="p-1.5 text-gray-400 hover:text-blue-500 bg-white/90 rounded-full shadow-sm border border-gray-100"><RefreshCcw size={12} /></button>
@@ -537,8 +542,8 @@ export const LimeInterface = ({
                                                     </div>
                                                 </div>
                                             );
-                                        } 
-                                        
+                                        }
+
                                         else {
                                             return (
                                                 <div key={`${i}-${idx}`} className="flex gap-2 items-start animate-fade-in-up mt-1 relative pr-8 md:pr-0">
