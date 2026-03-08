@@ -338,61 +338,78 @@ ${COLOR_INSTRUCTION}
       if (messages.length > MAX_HISTORY) {
         finalMessages = messages.slice(-MAX_HISTORY);
       }
-      
-    } else if (memoryMode === 'lime') {
-        console.log("📱 Mode: LIME Group Chat (Phase 3)");
-        
-        const timelineIdx = body.limeTimeline || 6; 
-        const groupId = body.limeGroupId || 'group';
-        const memberIds = body.limeGroupMembers || [];
+    } else if (memoryMode === "lime") {
+      console.log("📱 Mode: LIME Group/Duo Chat");
 
-        const TIMELINE_CONTEXTS: Record<number, string> = {
-            0: "Early Years. Everyone is young/childhood friends. No trauma yet.",
-            1: "CRYCHIC Era. Sakiko is the happy leader. Tomori is extremely shy. Soyo is acting like a mom.",
-            2: "The Breakup (Rainy Day). Sakiko has just quit. The group is in chaos. Soyo is desperate.",
-            3: "MyGO!!!!! Formed. Anon is trying to glue everyone together. Taki and Tomori have a bond.",
-            4: "Spring Sunlight (Haruhikage). Major conflict. Sakiko is watching from shadows (Oblivionis). Soyo is broken.",
-            5: "It's MyGO!!!!! (Reunited). The band is solid. Anon is the heart.",
-            6: "Ave Mujica Era. Sakiko is cold/ruthless. Mutsu is silent. The masks are on.",
-            7: "Ave Mujica Collapse. (Hypothetical scenario).",
-            8: "Reconciliation. All conflicts resolved.",
-            9: "Future. Adult life."
-        };
+      const timeSlice = body.limeTimeline || "5-6";
+      const isAu = body.limeReality === "au";
+      const auContext = body.limeAuContext || "";
+      const groupType = body.limeGroupType || "group";
+      const povCharId = body.limePovChar || "";
+      const memberIds = body.limeGroupMembers || [];
 
-        const timeContext = TIMELINE_CONTEXTS[timelineIdx] || "Unknown Timeline";
+      const TIMELINE_CONTEXTS: Record<string, string> = {
+        "0-1": "Early Years. Childhood friends. No trauma.",
+        "1-2": "CRYCHIC Formed. Active, happy, hopeful.",
+        "2-3":
+          "CRYCHIC Disbanded. The rainy day just happened. Extreme tension and sadness.",
+        "3-4": "MyGO Formed. Anon is trying her best. Tomori is healing.",
+        "4-5":
+          "MyGO Broken (Haruhikage crisis). Betrayal, running away, Soyo is ghosting everyone.",
+        "5-6": "MyGO Reunited (Poetry and Bonds). Firm friendship.",
+        "6-7":
+          "Ave Mujica Formed. Masks on, professional, Sakiko is ruthless (Oblivionis).",
+        "7-8":
+          "Ave Mujica Disbanded (Hypothetical). Total collapse. Mutsu is broken.",
+        "8-9":
+          "Reconciliation. The true happy ending. Everyone forgives each other.",
+        "9-10": "Future. Adult life. Mature and peaceful.",
+      };
 
-        let groupLore = "";
-        memberIds.forEach((mid: string) => {
-            const char = CHAR_DATA.find(c => c.id === mid);
-            const lore = LORE_LIBRARY[mid] || char?.lore || "";
-            if (char) {
-                groupLore += `--- [Character: ${char.name}] ---\n${lore}\n[Current State]: Based on Timeline ${timelineIdx}.\n\n`;
-            }
-        });
+      const currentWorldRule = isAu
+        ? `[ALTERNATE UNIVERSE (AU) ENABLED]: Ignore Canon timelines. Base the character relations strictly on this premise: "${auContext}"`
+        : `[CANON TIMELINE (${timeSlice})]: ${TIMELINE_CONTEXTS[timeSlice] || "Current Era"}`;
 
+      let groupLore = "";
+      memberIds.forEach((mid: string) => {
+        const char = CHAR_DATA.find((c) => c.id === mid);
+        if (char) groupLore += `--- [${char.name}] ---\n${char.lore || ""}\n`;
+      });
+
+      finalSystemPrompt += `
+=== 📱 LIME CHAT ENGINE ===
+[ROLE]: You are the server backend rendering a simulated chat app.
+[WORLD RULE]: ${currentWorldRule}
+
+[CHARACTER LORE]:
+${groupLore}[MODE INSTRUCTION]:
+`;
+
+      if (groupType === "duo") {
         finalSystemPrompt += `
-=== 📱 LIME GROUP CHAT PROTOCOL ===
-[ROLE]: You are the server simulating a group chat.
-[CURRENT TIMELINE (${timelineIdx})]: ${timeContext}
-[MEMBERS IN CHAT]: ${memberIds.join(', ')}
+This is a 1-on-1 private chat (Duo Mode). 
+The screen belongs to:[${CHAR_DATA.find((c) => c.id === povCharId)?.name || "User"}]. 
+You must act as the OTHER character texting the POV character.
+[SPECIAL DUO POWERS]: 
+If the other character feels extreme anger, betrayal, or annoyance, they can choose to BLOCK the POV character or CHANGE THEIR NICKNAME maliciously. 
+To do this, output a system message in the JSON like this:
+{ "charId": "system", "text": "[SYSTEM]: You have been blocked by this user." }
+Or:
+{ "charId": "system", "text": "[SYSTEM]: The other user changed your nickname to 'Baka'." }
+`;
+      } else {
+        finalSystemPrompt += `This is a Group Chat. Generate organic interaction between the members. If a character is currently missing/angry based on the timeline (e.g. Soyo in Haruhikage), they should NOT reply.`;
+      }
 
-[CHARACTER LORE & STATES]:
-${groupLore}
-
-[INSTRUCTION]:
-1. Simulate the conversation based strictly on the Timeline Context. 
-   - Example: If Timeline is 2 or 3, Sakiko should NOT speak in the "MyGO" group (she left).
-   - Example: If Timeline is 4, Soyo should be passive-aggressive or silent.
-2. Output JSON array ONLY.
-
-[JSON SCHEMA]:
+      finalSystemPrompt += `
+[OUTPUT FORMAT]:
+You MUST return ONLY a JSON array wrapped in <lime_chat>.
 <lime_chat>[
-  { "charId": "anon", "text": "Content..." },
-  { "charId": "taki", "text": "Content..." }
+  { "charId": "soyo", "text": "Don't ever message me again." },
+  { "charId": "system", "text": "[SYSTEM]: You have been blocked." }
 ]
 </lime_chat>
 `;
-
       const LIME_WINDOW = 6;
       if (messages.length > LIME_WINDOW) {
         finalMessages = [messages[0], ...messages.slice(-LIME_WINDOW)];

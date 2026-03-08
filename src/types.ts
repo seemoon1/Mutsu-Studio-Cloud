@@ -103,7 +103,7 @@ export type LimeChatGroup = {
     type: LimeGroupType;
     pov: LimePOV;
     reality: LimeReality;
-    timeline: number;
+    timeline: number | string;
     members: string[];
     defaultPovChar?: string;
     isBlocked?: boolean;

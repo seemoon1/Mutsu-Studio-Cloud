@@ -351,6 +351,7 @@ export const ChatInterface = ({
     outfits,
     handleVisualCommand,
     setPreviewImage,
+    sessions, setCurrentSessionId,
 }: any) => {
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -609,7 +610,14 @@ export const ChatInterface = ({
                     </div>
 
                     <button
-                        onClick={() => createNewSession('system', 'lime')}
+                        onClick={() => {
+                            const existingLime = sessions?.find((s: any) => s.memoryMode === 'lime');
+                            if (existingLime) {
+                                setCurrentSessionId(existingLime.id);
+                            } else {
+                                createNewSession('system', 'lime');
+                            }
+                        }}
                         className="p-2 hover:bg-emerald-50 rounded text-emerald-500 hover:text-emerald-600 transition-colors"
                         title="Enter LIME Network"
                     >

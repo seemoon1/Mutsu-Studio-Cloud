@@ -201,7 +201,7 @@ export const SidebarLeft = ({
                                             </div>
                                             {f.isExpanded && (
                                                 <div className="ml-3 pl-2 border-l border-gray-100">
-                                                    {sessions.filter((s: any) => s.folderId === f.id && s.title.toLowerCase().includes(searchQuery)).map((s: any) => (
+                                                    {sessions.filter((s: any) => s.folderId === f.id && s.title.toLowerCase().includes(searchQuery) && s.memoryMode !== 'lime').map((s: any) => (
                                                         <div key={s.id} className="flex items-center gap-1">
                                                             {isBatchMode && (
                                                                 <button onClick={() => toggleSelect(s.id)} className="p-1">
@@ -218,7 +218,7 @@ export const SidebarLeft = ({
                                         </div>
                                     ))}
 
-                                    {sessions.filter((s: any) => !s.folderId && s.title.toLowerCase().includes(searchQuery)).map((s: any) => (
+                                    {sessions.filter((s: any) => !s.folderId && s.title.toLowerCase().includes(searchQuery) && s.memoryMode !== 'lime').map((s: any) => (
                                         <div key={s.id} className="flex items-center gap-1 mb-0.5">
                                             {isBatchMode && (
                                                 <button onClick={() => toggleSelect(s.id)} className="p-1">

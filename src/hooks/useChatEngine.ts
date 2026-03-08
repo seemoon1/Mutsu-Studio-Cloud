@@ -128,6 +128,9 @@ export const useChatEngine = ({
     };
 
     try {
+      const activeLimeGroup = currentSession.limeGroups?.find(
+        (g: any) => g.id === currentSession.limeGroupId,
+      );
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,10 +147,15 @@ export const useChatEngine = ({
           localWorldInfo: currentSession.localWorldInfo,
           memoryMode: currentSession.memoryMode || "sliding",
 
-          limeGroupId: currentSession.limeGroupId, 
-          limeTimeline: currentSession.limeTimeline,
-          limeGroupMembers: currentSession.limeGroups?.find((g: any) => g.id === currentSession.limeGroupId)?.members,
-          
+          limeGroupId: currentSession.limeGroupId,
+
+          limeTimeline: activeLimeGroup?.timeline || "5-6",
+          limeGroupType: activeLimeGroup?.type || "group",
+          limePovChar: activeLimeGroup?.defaultPovChar || "",
+          limeReality: activeLimeGroup?.reality || "canon",
+          limeAuContext: (activeLimeGroup as any)?.auContext || currentSession?.localWorldInfo || "",
+          limeGroupMembers: activeLimeGroup?.members || [],
+
           stm: currentSession.stm,
           ltm: currentSession.ltm,
           timeline: currentSession.timeline,

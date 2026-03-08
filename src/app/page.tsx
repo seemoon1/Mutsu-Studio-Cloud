@@ -580,6 +580,7 @@ export default function Home() {
                     input={engine.input} setInput={engine.setInput}
                     isLoading={engine.isLoading}
                     showToast={ui.showToast} outfits={effectiveConfig?.outfits || {}}
+                    sessions={cloud.sessions} setCurrentSessionId={setCurrentSessionId}
 
                     selectedModel={config.selectedModel} customModelId={config.customModelId} isMultimodal={true}
                     useTTS={config.tts}
