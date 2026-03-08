@@ -197,75 +197,83 @@ export const useLimeEngine = ({
         .then((res) => res.json())
         .then((microData) => {
           if (microData.summary) {
-            const summaryLine = `•[LIME: ${activeGroup.name}]: ${microData.summary}\n`;
+            const summaryLine = `•[${activeGroup.name}]: ${microData.summary}\n`;
 
             setSessions((prev: any) =>
               prev.map((s: any) => {
-                if (s.id === currentSession.id) {
-                  const newStm = (s.stm || "") + summaryLine;
-                  const newCount = (s.turnCount || 0) + 1;
+                if (s.id !== currentSession.id) return s;
 
-                  if (newCount >= 7) {
-                    fetch("/api/summarize", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        text: newStm,
-                        previousLtm: s.ltm,
-                        mode: "macro",
-                        localKeys: {
-                          deepseek:
-                            localStorage.getItem("mutsu_key_deepseek") || "",
-                          openrouter:
-                            localStorage.getItem("mutsu_key_openrouter") || "",
-                          google:
-                            localStorage.getItem("mutsu_key_google") || "",
-                          volcengine:
-                            localStorage.getItem("mutsu_key_volcengine") || "",
-                          volc_ep_chat:
-                            localStorage.getItem("mutsu_key_volc_ep_chat") ||
-                            "",
-                        },
-                      }),
-                    })
-                      .then((r) => r.json())
-                      .then((macroData) => {
-                        if (macroData.summary) {
-                          setSessions((inner: any) =>
-                            inner.map((innerS: any) =>
-                              innerS.id === currentSession.id
-                                ? {
-                                    ...innerS,
-                                    ltm: macroData.summary,
-                                    stm: "",
-                                    turnCount: 0,
-                                  }
-                                : innerS,
-                            ),
-                          );
-                          if (showToast) showToast("✨ 群聊记忆已固化");
-                        }
-                      });
-                    return {
-                      ...s,
-                      stm: newStm,
-                      stmBackup: s.stm,
-                      turnCount: 0,
-                    };
-                  }
-                  return {
-                    ...s,
+                const updatedGroups = [...s.limeGroups];
+                const gIndex = updatedGroups.findIndex(
+                  (g) => g.id === activeGroupId,
+                );
+                if (gIndex === -1) return s;
+
+                const tGroup = updatedGroups[gIndex];
+                const newStm = (tGroup.stm || "") + summaryLine;
+                const newCount = (tGroup.turnCount || 0) + 1;
+
+                if (newCount >= 7) {
+                  fetch("/api/summarize", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      text: newStm,
+                      previousLtm: tGroup.ltm,
+                      mode: "macro",
+                      localKeys: {
+                        deepseek:
+                          localStorage.getItem("mutsu_key_deepseek") || "",
+                        openrouter:
+                          localStorage.getItem("mutsu_key_openrouter") || "",
+                        google: localStorage.getItem("mutsu_key_google") || "",
+                        volcengine:
+                          localStorage.getItem("mutsu_key_volcengine") || "",
+                        volc_ep_chat:
+                          localStorage.getItem("mutsu_key_volc_ep_chat") || "",
+                      },
+                    }),
+                  })
+                    .then((r) => r.json())
+                    .then((macroData) => {
+                      if (macroData.summary) {
+                        setSessions((inner: any) =>
+                          inner.map((innerS: any) => {
+                            if (innerS.id !== currentSession.id) return innerS;
+                            const macroGroups = [...innerS.limeGroups];
+                            const mIndex = macroGroups.findIndex(
+                              (mg) => mg.id === activeGroupId,
+                            );
+                            if (mIndex !== -1) {
+                              macroGroups[mIndex] = {
+                                ...macroGroups[mIndex],
+                                ltm: macroData.summary,
+                                stm: "",
+                                turnCount: 0,
+                              };
+                            }
+                            return { ...innerS, limeGroups: macroGroups };
+                          }),
+                        );
+                      }
+                    });
+                  updatedGroups[gIndex] = {
+                    ...tGroup,
                     stm: newStm,
-                    stmBackup: s.stm,
+                    turnCount: 0,
+                  };
+                } else {
+                  updatedGroups[gIndex] = {
+                    ...tGroup,
+                    stm: newStm,
                     turnCount: newCount,
                   };
                 }
-                return s;
+                return { ...s, limeGroups: updatedGroups };
               }),
             );
           }
-        })
-        .catch((e) => console.error("书记官总结失败:", e));
+        });
     } catch (e: any) {
       console.error(e);
       if (showToast) showToast("❌ 通信中断");

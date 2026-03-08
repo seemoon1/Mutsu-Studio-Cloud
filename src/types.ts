@@ -108,6 +108,10 @@ export type LimeChatGroup = {
     members: string[];
     defaultPovChar?: string;
     isBlocked?: boolean;
+    stm?: string;
+    ltm?: string;
+    turnCount?: number;
+    
     messages: any[];
     createdAt: number;
     updatedAt: number;

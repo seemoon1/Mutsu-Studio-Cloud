@@ -618,7 +618,7 @@ export const ChatInterface = ({
                                 createNewSession('system', 'lime');
                             }
                         }}
-                        className="p-2 hover:bg-emerald-50 rounded text-emerald-500 hover:text-emerald-600 transition-colors"
+                        className="hidden md:flex p-2 hover:bg-emerald-50 rounded text-emerald-500 hover:text-emerald-600 transition-colors"
                         title="Enter LIME Network"
                     >
                         <MessageCircle size={18} />
@@ -626,7 +626,7 @@ export const ChatInterface = ({
 
                     <button
                         onClick={() => createNewSession(currentCharacter.id, 'novel')}
-                        className="p-2 hover:bg-rose-50 rounded text-rose-400 hover:text-rose-600 transition-colors"
+                        className="hidden md:flex p-2 hover:bg-rose-50 rounded text-rose-400 hover:text-rose-600 transition-colors"
                         title="Enter Novel Mode"
                     >
                         <Moon size={18} />
@@ -651,13 +651,19 @@ export const ChatInterface = ({
 
             <AnimatePresence>
                 {showMobileTopMenu && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="md:hidden bg-white/90 backdrop-blur border-b border-gray-100 overflow-hidden z-10 shadow-sm"
-                    >
+                    <motion.div className="md:hidden bg-white/90 backdrop-blur border-b border-gray-100 overflow-hidden z-10 shadow-sm">
                         <div className="p-3 grid grid-cols-4 gap-2">
+                            <button onClick={() => {
+                                const existingLime = sessions?.find((s: any) => s.memoryMode === 'lime');
+                                if (existingLime) setCurrentSessionId(existingLime.id); else createNewSession('system', 'lime');
+                                setShowMobileTopMenu(false);
+                            }} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                                <MessageCircle size={16} /> <span className="text-[10px] font-bold">LIME</span>
+                            </button>
+                            <button onClick={() => { createNewSession(currentCharacter.id, 'novel'); setShowMobileTopMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-rose-50 text-rose-500">
+                                <Moon size={16} /> <span className="text-[10px] font-bold">Novel</span>
+                            </button>
+
                             <ToolButtons isMobile={true} />
                         </div>
                     </motion.div>

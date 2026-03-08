@@ -56,10 +56,13 @@ export const LimeInterface = ({
     const [newGroupReality, setNewGroupReality] = useState<'canon' | 'au'>('canon');
     const [newGroupAuContext, setNewGroupAuContext] = useState("");
 
+    const[editingAuId, setEditingAuId] = useState<string | null>(null);
+    const [tempAuContext, setTempAuContext] = useState("");
+
     useEffect(() => {
-        setLocalStm(currentSession?.stm || "");
-        setLocalLtm(currentSession?.ltm || "");
-    }, [currentSession?.stm, currentSession?.ltm]);
+        setLocalStm(activeGroup?.stm || "");
+        setLocalLtm(activeGroup?.ltm || "");
+    }, [activeGroup?.stm, activeGroup?.ltm, activeGroupId]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -121,7 +124,10 @@ export const LimeInterface = ({
             updatedAt: Date.now(),
         };
 
-        updateSessionInfo(currentSession.id, { limeGroups: [newGroup, ...limeGroups] });
+        updateSessionInfo(currentSession.id, { 
+            limeGroups: [newGroup, ...limeGroups],
+            limeGroupId: newGroup.id
+        });
         setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setActiveGroupId(newGroup.id);
     };
 
@@ -145,8 +151,11 @@ export const LimeInterface = ({
     };
 
     const handleSaveMemory = () => {
-        if (updateSessionInfo) updateSessionInfo(currentSession.id, { stm: localStm, ltm: localLtm });
-        setShowMemory(false);
+        if (updateSessionInfo && activeGroupId) {
+            const updated = limeGroups.map(g => g.id === activeGroupId ? { ...g, stm: localStm, ltm: localLtm } : g);
+            updateSessionInfo(currentSession.id, { limeGroups: updated });
+            setShowMemory(false);
+        }
     };
 
     const parseLimeChat = (content: string) => {
@@ -170,12 +179,42 @@ export const LimeInterface = ({
                         </div>
                         <div className="p-4"><button onClick={() => setIsCreating(true)} className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm"><Plus size={18} /> New Group</button></div>
                         <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">Active Chats</div>
                             {limeGroups.map(g => (
-                                <div key={g.id} onClick={() => { setActiveGroupId(g.id); setIsCreating(false); updateSessionInfo(currentSession.id, { limeGroupId: g.id }); }} className="relative p-4 bg-white border border-gray-100 rounded-2xl hover:shadow-md cursor-pointer transition-all hover:border-emerald-200 group">
-                                    <div className="font-bold text-gray-800 flex items-center gap-2 pr-8"><Users size={16} className="text-emerald-500" /> <span className="truncate">{g.name}</span></div>
-                                    <div className="text-[10px] text-gray-400 mt-2 flex gap-2"><span className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{g.pov.toUpperCase()}</span></div>
+                                <div key={g.id} className="relative p-4 bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all hover:border-emerald-200 group">
+                                    
+                                    {editingAuId === g.id ? (
+                                        <div className="flex flex-col gap-2">
+                                            <span className="text-[10px] font-bold text-purple-500">Edit AU Context</span>
+                                            <textarea value={tempAuContext} onChange={e => setTempAuContext(e.target.value)} className="w-full bg-purple-50 border border-purple-200 rounded p-2 text-xs outline-none resize-none" rows={3}/>
+                                            <div className="flex gap-2 justify-end">
+                                                <button onClick={() => setEditingAuId(null)} className="px-3 py-1 text-xs text-gray-500 bg-gray-100 rounded">Cancel</button>
+                                                <button onClick={() => {
+                                                    const updated = limeGroups.map(lg => lg.id === g.id ? { ...lg, auContext: tempAuContext } : lg);
+                                                    updateSessionInfo(currentSession.id, { limeGroups: updated });
+                                                    setEditingAuId(null);
+                                                }} className="px-3 py-1 text-xs text-white bg-purple-500 rounded">Save</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div onClick={() => { setActiveGroupId(g.id); setIsCreating(false); updateSessionInfo(currentSession.id, { limeGroupId: g.id }); }} className="cursor-pointer">
+                                            <div className="font-bold text-gray-800 flex items-center gap-2 pr-16"><Users size={16} className="text-emerald-500" /> <span className="truncate">{g.name}</span></div>
+                                            <div className="text-[10px] text-gray-400 mt-2 flex gap-2">
+                                                <span className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{g.pov.toUpperCase()}</span>
+                                                <span className="bg-purple-50 px-2 py-0.5 rounded border border-purple-100 text-purple-600">{g.reality === 'au' ? 'AU' : `T-${g.timeline}`}</span>
+                                            </div>
+                                        </div>
+                                    )}
 
-                                    <button onClick={(e) => handleDeleteGroup(g.id, e)} className="absolute right-4 top-4 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-all"><Trash2 size={16} /></button>
+                                    {g.reality === 'au' && editingAuId !== g.id && (
+                                        <button onClick={(e) => { e.stopPropagation(); setEditingAuId(g.id); setTempAuContext(g.auContext || ""); }} className="absolute right-12 top-4 text-purple-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-purple-600 hover:bg-purple-50 p-1.5 rounded-lg transition-all z-10">
+                                            <Edit2 size={16}/>
+                                        </button>
+                                    )}
+
+                                    <button onClick={(e) => handleDeleteGroup(g.id, e)} className="absolute right-4 top-4 text-red-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-all z-10">
+                                        <Trash2 size={16}/>
+                                    </button>
                                 </div>
                             ))}
                         </div>
