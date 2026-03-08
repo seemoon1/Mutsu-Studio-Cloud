@@ -20,13 +20,17 @@ export const useLimeEngine = ({
     }
   };
 
-  const handleDeleteMessage = (groupIndex: number, msgIndex: number) => {
+  const handleDeleteMessage = (groupId: string, msgIndex: number) => {
     if (!currentSession) return;
     const updatedGroups = [...currentSession.limeGroups];
-    const targetGroup = updatedGroups[groupIndex];
+    const gIndex = updatedGroups.findIndex((g) => g.id === groupId);
+    if (gIndex === -1) return;
 
-    const newMsgs = targetGroup.messages.filter((_: any, i: number) => i !== msgIndex);
-    updatedGroups[groupIndex] = { ...targetGroup, messages: newMsgs };
+    const targetGroup = updatedGroups[gIndex];
+    const newMsgs = targetGroup.messages.filter(
+      (_: any, i: number) => i !== msgIndex,
+    );
+    updatedGroups[gIndex] = { ...targetGroup, messages: newMsgs };
 
     setSessions((prev: any) =>
       prev.map((s: any) =>
@@ -35,14 +39,19 @@ export const useLimeEngine = ({
     );
   };
 
-  const handleRegenerate = (groupIndex: number) => {
+  const handleRegenerate = (groupId: string) => {
     if (!currentSession) return;
-    const targetGroup = currentSession.limeGroups[groupIndex];
+    const gIndex = currentSession.limeGroups.findIndex(
+      (g: any) => g.id === groupId,
+    );
+    if (gIndex === -1) return;
+
+    const targetGroup = currentSession.limeGroups[gIndex];
     const lastMsg = targetGroup.messages[targetGroup.messages.length - 1];
 
-    if (lastMsg.role === "assistant") {
-      handleDeleteMessage(groupIndex, targetGroup.messages.length - 1);
-      if (showToast) showToast("🔄 已撤回，请重新发送指令。");
+    if (lastMsg && lastMsg.role === "assistant") {
+      handleDeleteMessage(groupId, targetGroup.messages.length - 1);
+      if (showToast) showToast("🔄 已撤回，请修改大纲后重新发送。");
     }
   };
 

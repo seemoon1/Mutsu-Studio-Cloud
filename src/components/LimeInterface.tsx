@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     ChevronLeft, Phone, Menu, Send, Loader2,
     Brain, Save, Plus, Users, Settings, Smartphone,
-    Clock, Globe, Trash2, Edit2, Cpu, X, RefreshCcw, 
-    Square, 
+    Clock, Globe, Trash2, Edit2, Cpu, X, RefreshCcw,
+    Square,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
@@ -25,7 +25,7 @@ const TIMELINE_OPTIONS = [
 
 export const LimeInterface = ({
     currentSession, handleSend, input, setInput, isLoading, dbChars, onExit, updateSessionInfo,
-    apiProvider, setApiProvider, selectedModel, setSelectedModel, MODEL_DATA, 
+    apiProvider, setApiProvider, selectedModel, setSelectedModel, MODEL_DATA,
     stopGeneration,
     handleDeleteMessage,
     handleRegenerate
@@ -78,14 +78,37 @@ export const LimeInterface = ({
 
         const isDuo = selectedMembers.length === 2;
         const type = isDuo ? 'duo' : 'group';
-
         const defaultPov = isDuo ? selectedMembers[0] : undefined;
-
         const finalPov = isDuo ? 'outsider' : newGroupPov;
+
+        let finalGroupName = newGroupName.trim();
+
+        if (newGroupReality === 'canon') {
+            const isDuplicate = limeGroups.some(g =>
+                g.reality === 'canon' &&
+                g.name === finalGroupName &&
+                g.timeline === newGroupTimeline &&
+                g.pov === finalPov
+            );
+            if (isDuplicate) {
+                alert(`⚠️ 在时间线 T-${newGroupTimeline} 下，已存在名为 "${finalGroupName}" 的 [${finalPov}] 模式群聊！\n每个时间线仅允许存在一内一外两个同名群聊。`);
+                return;
+            }
+        } else {
+            const auGroups = limeGroups.filter(g => g.reality === 'au' && g.name.startsWith(finalGroupName));
+            const auCount = auGroups.length;
+
+            let suffix = "1st";
+            if (auCount === 1) suffix = "2nd";
+            else if (auCount === 2) suffix = "3rd";
+            else if (auCount >= 3) suffix = `${auCount + 1}th`;
+
+            finalGroupName = `${finalGroupName} (AU_${suffix})`;
+        }
 
         const newGroup: LimeChatGroup = {
             id: uuidv4(),
-            name: newGroupName,
+            name: finalGroupName,
             type: type,
             pov: finalPov,
             reality: newGroupReality,
@@ -97,6 +120,7 @@ export const LimeInterface = ({
             createdAt: Date.now(),
             updatedAt: Date.now(),
         };
+
         updateSessionInfo(currentSession.id, { limeGroups: [newGroup, ...limeGroups] });
         setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setActiveGroupId(newGroup.id);
     };
@@ -497,28 +521,33 @@ export const LimeInterface = ({
                     <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                         <Plus size={24} />
                     </button>
-                    
-                    <textarea 
-                        value={input} 
-                        onChange={e => setInput(e.target.value)} 
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} 
-                        placeholder="Message..." 
-                        className="flex-1 bg-white rounded-2xl px-4 py-2.5 max-h-24 outline-none resize-none text-[15px] text-gray-900 font-medium border border-gray-200 focus:border-emerald-400 transition-colors" 
-                        rows={1} 
+
+                    <textarea
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
+                        placeholder="Message..."
+                        className="flex-1 bg-white rounded-2xl px-4 py-2.5 max-h-24 outline-none resize-none text-[15px] text-gray-900 font-medium border border-gray-200 focus:border-emerald-400 transition-colors"
+                        rows={1}
                     />
-                    
+
                     {isLoading ? (
-                        <button 
-                            onClick={stopGeneration} 
+                        <button
+                            onClick={stopGeneration}
                             className="p-2 text-red-500 hover:text-red-600 shrink-0 hover:scale-110 transition-all animate-pulse"
                             title="Stop Generating"
                         >
                             <Square fill="currentColor" size={24} />
                         </button>
                     ) : (
-                        <button 
-                            disabled={!input.trim()} 
-                            onClick={() => handleSend()} 
+                        <button
+                            disabled={!input.trim()}
+                            onClick={() => handleSend()}
                             className="p-2 text-[#32CC70] disabled:opacity-50 hover:brightness-110 shrink-0 hover:scale-110 transition-all"
                             title="Send"
                         >
