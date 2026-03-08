@@ -56,7 +56,7 @@ export const LimeInterface = ({
     const [newGroupReality, setNewGroupReality] = useState<'canon' | 'au'>('canon');
     const [newGroupAuContext, setNewGroupAuContext] = useState("");
 
-    const[editingAuId, setEditingAuId] = useState<string | null>(null);
+    const [editingAuId, setEditingAuId] = useState<string | null>(null);
     const [tempAuContext, setTempAuContext] = useState("");
 
     useEffect(() => {
@@ -86,27 +86,22 @@ export const LimeInterface = ({
 
         let finalGroupName = newGroupName.trim();
 
+        let auLabelStr = "";
+
         if (newGroupReality === 'canon') {
-            const isDuplicate = limeGroups.some(g =>
-                g.reality === 'canon' &&
-                g.name === finalGroupName &&
-                g.timeline === newGroupTimeline &&
-                g.pov === finalPov
-            );
+            const isDuplicate = limeGroups.some(g => g.reality === 'canon' && g.name === finalGroupName && g.timeline === newGroupTimeline && g.pov === finalPov);
             if (isDuplicate) {
-                alert(`⚠️ 在时间线 T-${newGroupTimeline} 下，已存在名为 "${finalGroupName}" 的 [${finalPov}] 模式群聊！\n每个时间线仅允许存在一内一外两个同名群聊。`);
+                alert(`⚠️ 在时间线 T-${newGroupTimeline} 下，已存在名为 "${finalGroupName}" 的[${finalPov}] 模式群聊！`);
                 return;
             }
         } else {
-            const auGroups = limeGroups.filter(g => g.reality === 'au' && g.name.startsWith(finalGroupName));
+            const auGroups = limeGroups.filter(g => g.reality === 'au' && g.name === finalGroupName);
             const auCount = auGroups.length;
-
             let suffix = "1st";
             if (auCount === 1) suffix = "2nd";
             else if (auCount === 2) suffix = "3rd";
             else if (auCount >= 3) suffix = `${auCount + 1}th`;
-
-            finalGroupName = `${finalGroupName} (AU_${suffix})`;
+            auLabelStr = `AU_${suffix}`;
         }
 
         const newGroup: LimeChatGroup = {
@@ -115,6 +110,7 @@ export const LimeInterface = ({
             type: type,
             pov: finalPov,
             reality: newGroupReality,
+            auLabel: auLabelStr,
             auContext: newGroupAuContext,
             timeline: newGroupTimeline,
             members: selectedMembers,
@@ -124,7 +120,7 @@ export const LimeInterface = ({
             updatedAt: Date.now(),
         };
 
-        updateSessionInfo(currentSession.id, { 
+        updateSessionInfo(currentSession.id, {
             limeGroups: [newGroup, ...limeGroups],
             limeGroupId: newGroup.id
         });
@@ -146,11 +142,13 @@ export const LimeInterface = ({
 
     const handleUpdateMembers = (newMembers: string[]) => {
         if (!activeGroupId) return;
+        if (!confirm("⚠️ 确定要变更群成员吗？")) return;
         const updated = limeGroups.map(g => g.id === activeGroupId ? { ...g, members: newMembers } : g);
         updateSessionInfo(currentSession.id, { limeGroups: updated });
     };
 
     const handleSaveMemory = () => {
+        if (!confirm("💾 确定要覆盖当前的记忆面板吗？")) return;
         if (updateSessionInfo && activeGroupId) {
             const updated = limeGroups.map(g => g.id === activeGroupId ? { ...g, stm: localStm, ltm: localLtm } : g);
             updateSessionInfo(currentSession.id, { limeGroups: updated });
@@ -182,18 +180,19 @@ export const LimeInterface = ({
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">Active Chats</div>
                             {limeGroups.map(g => (
                                 <div key={g.id} className="relative p-4 bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all hover:border-emerald-200 group">
-                                    
+
                                     {editingAuId === g.id ? (
                                         <div className="flex flex-col gap-2">
-                                            <span className="text-[10px] font-bold text-purple-500">Edit AU Context</span>
-                                            <textarea value={tempAuContext} onChange={e => setTempAuContext(e.target.value)} className="w-full bg-purple-50 border border-purple-200 rounded p-2 text-xs outline-none resize-none" rows={3}/>
+                                            <span className="text-[10px] font-bold text-purple-600">Edit AU Context</span>
+                                            <textarea value={tempAuContext} onChange={e => setTempAuContext(e.target.value)} className="w-full bg-purple-50 border border-purple-300 rounded p-2 text-xs outline-none resize-none text-purple-900 font-medium" rows={3} />
                                             <div className="flex gap-2 justify-end">
-                                                <button onClick={() => setEditingAuId(null)} className="px-3 py-1 text-xs text-gray-500 bg-gray-100 rounded">Cancel</button>
+                                                <button onClick={() => setEditingAuId(null)} className="px-3 py-1 text-xs text-gray-500 bg-gray-100 rounded font-bold">Cancel</button>
                                                 <button onClick={() => {
+                                                    if (!confirm("⚙️ 确定要修改当前频段的架空世界观吗？")) return;
                                                     const updated = limeGroups.map(lg => lg.id === g.id ? { ...lg, auContext: tempAuContext } : lg);
                                                     updateSessionInfo(currentSession.id, { limeGroups: updated });
                                                     setEditingAuId(null);
-                                                }} className="px-3 py-1 text-xs text-white bg-purple-500 rounded">Save</button>
+                                                }} className="px-3 py-1 text-xs text-white bg-purple-500 hover:bg-purple-600 rounded font-bold shadow-sm">Save</button>
                                             </div>
                                         </div>
                                     ) : (
@@ -201,19 +200,21 @@ export const LimeInterface = ({
                                             <div className="font-bold text-gray-800 flex items-center gap-2 pr-16"><Users size={16} className="text-emerald-500" /> <span className="truncate">{g.name}</span></div>
                                             <div className="text-[10px] text-gray-400 mt-2 flex gap-2">
                                                 <span className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{g.pov.toUpperCase()}</span>
-                                                <span className="bg-purple-50 px-2 py-0.5 rounded border border-purple-100 text-purple-600">{g.reality === 'au' ? 'AU' : `T-${g.timeline}`}</span>
+                                                <span className="bg-purple-50 px-2 py-0.5 rounded border border-purple-100 text-purple-600 font-bold">
+                                                    {g.reality === 'au' ? (g.auLabel || 'AU') : `T-${g.timeline}`}
+                                                </span>
                                             </div>
                                         </div>
                                     )}
 
                                     {g.reality === 'au' && editingAuId !== g.id && (
                                         <button onClick={(e) => { e.stopPropagation(); setEditingAuId(g.id); setTempAuContext(g.auContext || ""); }} className="absolute right-12 top-4 text-purple-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-purple-600 hover:bg-purple-50 p-1.5 rounded-lg transition-all z-10">
-                                            <Edit2 size={16}/>
+                                            <Edit2 size={16} />
                                         </button>
                                     )}
 
                                     <button onClick={(e) => handleDeleteGroup(g.id, e)} className="absolute right-4 top-4 text-red-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-all z-10">
-                                        <Trash2 size={16}/>
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             ))}

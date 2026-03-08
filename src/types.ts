@@ -104,6 +104,7 @@ export type LimeChatGroup = {
     pov: LimePOV;
     reality: LimeReality;
     auContext?: string;
+    auLabel?: string;
     timeline: number | string;
     members: string[];
     defaultPovChar?: string;

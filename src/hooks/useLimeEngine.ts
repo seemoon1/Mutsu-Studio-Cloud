@@ -21,6 +21,8 @@ export const useLimeEngine = ({
   };
 
   const handleDeleteMessage = (groupId: string, msgIndex: number) => {
+    if (!confirm("⚠️ 确定要永久删除这条记录吗？（不可恢复）")) return;
+
     if (!currentSession) return;
     const updatedGroups = [...currentSession.limeGroups];
     const gIndex = updatedGroups.findIndex((g) => g.id === groupId);
@@ -40,17 +42,25 @@ export const useLimeEngine = ({
   };
 
   const handleRegenerate = (groupId: string) => {
+    if (!confirm("🔄 确定要撤回 AI 的最后一次回复并重新生成吗？")) return;
+
     if (!currentSession) return;
-    const gIndex = currentSession.limeGroups.findIndex(
-      (g: any) => g.id === groupId,
-    );
+    const updatedGroups = [...currentSession.limeGroups];
+    const gIndex = updatedGroups.findIndex((g: any) => g.id === groupId);
     if (gIndex === -1) return;
 
-    const targetGroup = currentSession.limeGroups[gIndex];
+    const targetGroup = updatedGroups[gIndex];
     const lastMsg = targetGroup.messages[targetGroup.messages.length - 1];
 
     if (lastMsg && lastMsg.role === "assistant") {
-      handleDeleteMessage(groupId, targetGroup.messages.length - 1);
+      const newMsgs = targetGroup.messages.slice(0, -1);
+      updatedGroups[gIndex] = { ...targetGroup, messages: newMsgs };
+
+      setSessions((prev: any) =>
+        prev.map((s: any) =>
+          s.id === currentSession.id ? { ...s, limeGroups: updatedGroups } : s,
+        ),
+      );
       if (showToast) showToast("🔄 已撤回，请修改大纲后重新发送。");
     }
   };

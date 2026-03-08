@@ -372,19 +372,24 @@ ${COLOR_INSTRUCTION}
         : `[CANON TIMELINE (${timeSlice})]: ${TIMELINE_CONTEXTS[timeSlice] || "Current Era"}`;
 
       let groupLore = "";
+      const allowedIdsList = memberIds.join(", ");
       memberIds.forEach((mid: string) => {
         const char = CHAR_DATA.find((c) => c.id === mid);
-        if (char) groupLore += `--- [${char.name}] ---\n${char.lore || ""}\n`;
+        if (char) groupLore += `---[${char.name}] ---\n${char.lore || ""}\n`;
       });
 
       finalSystemPrompt += `
 === 📱 LIME CHAT ENGINE ===
 [ROLE]: You are the server backend rendering a simulated chat app.
 [WORLD RULE]: ${currentWorldRule}
-[GROUP NAME]: "${groupName}" (Context: The characters can SEE this group name. React to it if it's weird.)
+[GROUP NAME]: "${groupName}"
 
 [CHARACTER LORE]:
-${groupLore}[MODE INSTRUCTION]:
+${groupLore}
+
+[CRITICAL RULE FOR "charId" FIELD]:
+When generating the JSON output, the "charId" field MUST strictly match one of these exact IDs: [${allowedIdsList}], or "system". 
+DO NOT invent IDs or use romaji names (e.g., use "mutsu" instead of "mutsumi", use "soyo" instead of "soyose"). Violating this will crash the frontend rendering!
 `;
 
       if (groupType === "duo") {
