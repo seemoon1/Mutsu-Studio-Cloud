@@ -412,6 +412,9 @@ export default function Home() {
                     input={limeEngine.input}
                     setInput={limeEngine.setInput}
                     isLoading={limeEngine.isLoading}
+                    stopGeneration={limeEngine.stopGeneration}
+                    handleDeleteMessage={limeEngine.handleDeleteMessage}
+                    handleRegenerate={limeEngine.handleRegenerate}
                     dbChars={CHAR_DATA}
                     updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
                     apiProvider={apiProvider}

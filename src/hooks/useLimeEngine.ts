@@ -1,54 +1,88 @@
 import { useState, useRef } from "react";
-import { v4 as uuidv4 } from "uuid";
 
 export const useLimeEngine = ({
   currentSession,
   setSessions,
-  activeCharacterId,
   apiProvider,
-  setEffect,
   showToast,
+  selectedModel,
+  localKeys,
 }: any) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const stopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+      if (showToast) showToast("⏹️ 生成已中断");
+    }
+  };
+
+  const handleDeleteMessage = (groupIndex: number, msgIndex: number) => {
+    if (!currentSession) return;
+    const updatedGroups = [...currentSession.limeGroups];
+    const targetGroup = updatedGroups[groupIndex];
+
+    const newMsgs = targetGroup.messages.filter((_: any, i: number) => i !== msgIndex);
+    updatedGroups[groupIndex] = { ...targetGroup, messages: newMsgs };
+
+    setSessions((prev: any) =>
+      prev.map((s: any) =>
+        s.id === currentSession.id ? { ...s, limeGroups: updatedGroups } : s,
+      ),
+    );
+  };
+
+  const handleRegenerate = (groupIndex: number) => {
+    if (!currentSession) return;
+    const targetGroup = currentSession.limeGroups[groupIndex];
+    const lastMsg = targetGroup.messages[targetGroup.messages.length - 1];
+
+    if (lastMsg.role === "assistant") {
+      handleDeleteMessage(groupIndex, targetGroup.messages.length - 1);
+      if (showToast) showToast("🔄 已撤回，请重新发送指令。");
+    }
+  };
 
   const handleSendLime = async (overrideInput?: string) => {
     if (isLoading || !currentSession || currentSession.memoryMode !== "lime")
       return;
 
     const activeGroupId = currentSession.limeGroupId;
-    if (!activeGroupId) {
-      if (showToast) showToast("❌ 请先选择一个频段");
-      return;
-    }
+    if (!activeGroupId) return;
 
     const activeGroupIndex = currentSession.limeGroups?.findIndex(
       (g: any) => g.id === activeGroupId,
     );
-    if (activeGroupIndex === -1 || activeGroupIndex === undefined) return;
+    if (activeGroupIndex === -1) return;
 
     const activeGroup = currentSession.limeGroups[activeGroupIndex];
     const txt = overrideInput !== undefined ? overrideInput : input.trim();
-
     if (!txt) return;
 
     setInput("");
     setIsLoading(true);
 
-    const userMsg = { role: "user", content: txt, timestamp: Date.now() };
+    const isDuo = activeGroup.type === "duo";
+    const finalContent = isDuo ? `(Director's Instruction: ${txt})` : txt;
 
-    const updatedGroupsWithUser = [...currentSession.limeGroups];
-    updatedGroupsWithUser[activeGroupIndex] = {
+    const userMsg = {
+      role: "user",
+      content: finalContent,
+      timestamp: Date.now(),
+    };
+
+    const updatedGroups = [...currentSession.limeGroups];
+    updatedGroups[activeGroupIndex] = {
       ...activeGroup,
       messages: [...activeGroup.messages, userMsg],
     };
 
     setSessions((prev: any) =>
       prev.map((s: any) =>
-        s.id === currentSession.id
-          ? { ...s, limeGroups: updatedGroupsWithUser }
-          : s,
+        s.id === currentSession.id ? { ...s, limeGroups: updatedGroups } : s,
       ),
     );
 
@@ -57,6 +91,7 @@ export const useLimeEngine = ({
       content:
         typeof m.content === "string" ? m.content : JSON.stringify(m.content),
     }));
+
     abortControllerRef.current = new AbortController();
 
     try {
@@ -65,10 +100,11 @@ export const useLimeEngine = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: history,
-          model: "google/gemini-3-flash-preview",
+          model: selectedModel || "google/gemini-3-flash-preview",
           memoryMode: "lime",
 
           limeGroupId: activeGroupId,
+          limeGroupName: activeGroup.name,
           limeTimeline: activeGroup.timeline,
           limeGroupType: activeGroup.type,
           limePovChar: activeGroup.defaultPovChar,
@@ -234,5 +270,8 @@ export const useLimeEngine = ({
     setInput,
     isLoading,
     handleSend: handleSendLime,
+    stopGeneration,
+    handleDeleteMessage,
+    handleRegenerate,
   };
 };

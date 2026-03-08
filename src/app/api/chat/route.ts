@@ -344,6 +344,7 @@ ${COLOR_INSTRUCTION}
       const timeSlice = body.limeTimeline || "5-6";
       const isAu = body.limeReality === "au";
       const auContext = body.limeAuContext || "";
+      const groupName = body.limeGroupName || "Group Chat";
       const groupType = body.limeGroupType || "group";
       const povCharId = body.limePovChar || "";
       const memberIds = body.limeGroupMembers || [];
@@ -380,6 +381,7 @@ ${COLOR_INSTRUCTION}
 === 📱 LIME CHAT ENGINE ===
 [ROLE]: You are the server backend rendering a simulated chat app.
 [WORLD RULE]: ${currentWorldRule}
+[GROUP NAME]: "${groupName}" (Context: The characters can SEE this group name. React to it if it's weird.)
 
 [CHARACTER LORE]:
 ${groupLore}[MODE INSTRUCTION]:
@@ -388,14 +390,10 @@ ${groupLore}[MODE INSTRUCTION]:
       if (groupType === "duo") {
         finalSystemPrompt += `
 This is a 1-on-1 private chat (Duo Mode). 
-The screen belongs to:[${CHAR_DATA.find((c) => c.id === povCharId)?.name || "User"}]. 
-You must act as the OTHER character texting the POV character.
-[SPECIAL DUO POWERS]: 
-If the other character feels extreme anger, betrayal, or annoyance, they can choose to BLOCK the POV character or CHANGE THEIR NICKNAME maliciously. 
-To do this, output a system message in the JSON like this:
-{ "charId": "system", "text": "[SYSTEM]: You have been blocked by this user." }
-Or:
-{ "charId": "system", "text": "[SYSTEM]: The other user changed your nickname to 'Baka'." }
+The screen belongs to: [${CHAR_DATA.find((c) => c.id === povCharId)?.name || "User"}]. 
+The User's input is a **DIRECTOR'S INSTRUCTION** (e.g., "(Make her angry)").
+You must act as the OTHER character texting the POV character based on that instruction.
+DO NOT reply to the user. Reply TO the POV character AS the target character.
 `;
       } else {
         finalSystemPrompt += `This is a Group Chat. Generate organic interaction between the members. If a character is currently missing/angry based on the timeline (e.g. Soyo in Haruhikage), they should NOT reply.`;

@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { 
-    ChevronLeft, Phone, Menu, Send, Loader2, 
-    Brain, Save, Plus, Users, Settings, Smartphone, 
-    Clock, Globe, Trash2, Edit2, Cpu, X, RefreshCcw
+import {
+    ChevronLeft, Phone, Menu, Send, Loader2,
+    Brain, Save, Plus, Users, Settings, Smartphone,
+    Clock, Globe, Trash2, Edit2, Cpu, X, RefreshCcw, 
+    Square, 
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
@@ -23,8 +24,11 @@ const TIMELINE_OPTIONS = [
 ];
 
 export const LimeInterface = ({
-    currentSession, handleSend, input, setInput, isLoading, dbChars, onExit, updateSessionInfo, 
-    apiProvider, setApiProvider, selectedModel, setSelectedModel, MODEL_DATA 
+    currentSession, handleSend, input, setInput, isLoading, dbChars, onExit, updateSessionInfo,
+    apiProvider, setApiProvider, selectedModel, setSelectedModel, MODEL_DATA, 
+    stopGeneration,
+    handleDeleteMessage,
+    handleRegenerate
 }: any) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +70,11 @@ export const LimeInterface = ({
     };
 
     const handleCreateGroup = () => {
-        if (!newGroupName || selectedMembers.length === 0) { /* ... */ return; }
+        if (!newGroupName) return;
+        if (selectedMembers.length < 2) {
+            alert("At least 2 members are required! (2 for Duo, 3+ for Group)");
+            return;
+        }
 
         const isDuo = selectedMembers.length === 2;
         const type = isDuo ? 'duo' : 'group';
@@ -130,7 +138,7 @@ export const LimeInterface = ({
         return (
             <div className="fixed inset-0 z-[500] bg-[#f0f2f5] flex items-center justify-center p-4 md:p-8 font-sans">
                 <div className="w-full max-w-6xl h-full bg-white md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
-                    
+
                     <div className="w-full md:w-1/3 h-[40%] md:h-full bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col">
                         <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-white">
                             <div className="flex items-center gap-2 text-emerald-600 font-black text-xl"><Smartphone size={24} /> LIME HUB</div>
@@ -269,19 +277,19 @@ export const LimeInterface = ({
                         <button onClick={() => setActiveGroupId(null)} className="hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors shrink-0 z-50 cursor-pointer pointer-events-auto">
                             <ChevronLeft size={28} />
                         </button>
-                        
+
                         <div className="flex flex-col min-w-0 flex-1">
                             {isRenaming ? (
-                                <input autoFocus value={renameText} onChange={e => setRenameText(e.target.value)} onBlur={handleRenameGroup} onKeyDown={e => e.key === 'Enter' && handleRenameGroup()} className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]"/>
+                                <input autoFocus value={renameText} onChange={e => setRenameText(e.target.value)} onBlur={handleRenameGroup} onKeyDown={e => e.key === 'Enter' && handleRenameGroup()} className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]" />
                             ) : (
-                                <div className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`} onClick={() => { if (activeGroup?.type === 'group') { setIsRenaming(true); setRenameText(activeGroup?.name || ""); }}}>
+                                <div className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`} onClick={() => { if (activeGroup?.type === 'group') { setIsRenaming(true); setRenameText(activeGroup?.name || ""); } }}>
                                     <span className="font-bold text-[15px] truncate max-w-[130px]">{displayTitle}</span>
                                     {activeGroup?.type === 'group' && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 text-gray-400" />}
                                 </div>
                             )}
                             <span className="text-[10px] text-white/50 truncate flex items-center gap-1">
                                 {activeGroup?.type === 'duo' ? (
-                                    <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>POV: {dbChars.find((c:any) => c.id === activeGroup.defaultPovChar)?.name}</>
+                                    <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>POV: {dbChars.find((c: any) => c.id === activeGroup.defaultPovChar)?.name}</>
                                 ) : (
                                     <>{activeGroup?.members.length} members • {activeGroup?.reality === 'au' ? 'AU World' : `T-${activeGroup?.timeline}`}</>
                                 )}
@@ -291,11 +299,11 @@ export const LimeInterface = ({
 
                     <div className="flex items-center gap-6 text-gray-300 shrink-0 ml-4">
                         <button onClick={() => { setShowMemory(!showMemory); setShowMemberManage(false); setShowModelMenu(false); }} className={`transition-colors ${showMemory ? 'text-[#32CC70]' : 'hover:text-white'}`}><Brain size={22} /></button>
-                        
+
                         <button onClick={() => { setShowMemberManage(!showMemberManage); setShowMemory(false); setShowModelMenu(false); }} className={`transition-colors ${showMemberManage ? 'text-[#32CC70]' : 'hover:text-white'}`}>
                             {activeGroup?.type === 'group' ? <Users size={22} /> : <RefreshCcw size={22} />}
                         </button>
-                        
+
                         <button onClick={() => { setShowModelMenu(!showModelMenu); setShowMemory(false); setShowMemberManage(false); }} className={`transition-colors ${showModelMenu ? 'text-[#32CC70]' : 'hover:text-white'}`}><Menu size={24} /></button>
                     </div>
                 </div>
@@ -304,9 +312,9 @@ export const LimeInterface = ({
                     {showModelMenu && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-4 bg-[#2B2C2E] border border-gray-700 rounded-xl shadow-xl z-50 w-64 p-3">
                             <div className="px-1 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-3 flex items-center gap-2">
-                                <Cpu size={12}/> API & Model Config
+                                <Cpu size={12} /> API & Model Config
                             </div>
-                            
+
                             <div className="flex bg-black/40 p-1 rounded-lg mb-3">
                                 <button onClick={() => setApiProvider('deepseek')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'deepseek' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Domestic</button>
                                 <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'openrouter' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Router</button>
@@ -315,7 +323,7 @@ export const LimeInterface = ({
 
                             <div className="flex flex-col gap-1">
                                 <label className="text-[10px] text-gray-400 font-bold">Select Model</label>
-                                <select 
+                                <select
                                     value={selectedModel}
                                     onChange={(e) => setSelectedModel(e.target.value)}
                                     className="w-full bg-[#1A1A1A] border border-gray-600 text-white text-xs rounded-lg px-2 py-2 outline-none focus:border-emerald-500"
@@ -402,28 +410,77 @@ export const LimeInterface = ({
                         if (msg.role === 'user') {
                             const text = typeof msg.content === 'string' ? msg.content : msg.content[0]?.text || "";
                             if (!text) return null;
+
                             return (
-                                <div key={i} className="flex gap-2 items-end justify-end animate-fade-in-up">
+                                <div key={i} className="group/msg flex gap-2 items-end justify-end animate-fade-in-up w-full">
+
+                                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity order-first mr-2">
+                                        <button
+                                            onClick={() => handleDeleteMessage(activeGroupId, i)}
+                                            className="p-1.5 text-gray-400 hover:text-red-500 bg-gray-100/80 rounded-full shadow-sm"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+
                                     <div className="flex flex-col gap-1 max-w-[75%] items-end">
-                                        <div className="text-gray-900 px-3 py-2 text-[14px] font-medium leading-relaxed shadow-sm rounded-2xl rounded-tr-sm break-words" style={{ backgroundColor: LIME_BUBBLE_ME }}>{text}</div>
+                                        <div className="text-gray-900 px-3 py-2 text-[14px] font-medium leading-relaxed shadow-sm rounded-2xl rounded-tr-sm break-words" style={{ backgroundColor: LIME_BUBBLE_ME }}>
+                                            {text}
+                                        </div>
+                                        <span className="text-[9px] text-gray-400 mr-1">Read</span>
                                     </div>
                                 </div>
                             );
                         }
+
                         if (msg.role === 'assistant' && msg.content) {
                             const chatArray = parseLimeChat(msg.content);
-                            return chatArray.map((chatObj: any, idx: number) => {
-                                const charInfo = dbChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "System", avatar: "👤", hex: "#cccccc" };
-                                return (
-                                    <div key={`${i}-${idx}`} className="flex gap-2 items-start animate-fade-in-up" style={{ animationDelay: `${idx * 0.1}s` }}>
-                                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm border border-black/5" style={{ backgroundColor: charInfo.hex }}>{charInfo.avatar}</div>
-                                        <div className="flex flex-col gap-1 max-w-[75%]">
-                                            <span className="text-[10px] text-gray-700 ml-1 font-bold">{charInfo.name}</span>
-                                            <div className="bg-white text-gray-900 font-medium px-3 py-2 text-[14px] leading-relaxed shadow-sm rounded-2xl rounded-tl-sm break-words border border-black/5">{chatObj.text}</div>
-                                        </div>
-                                    </div>
-                                );
-                            });
+
+                            return (
+                                <div key={i} className="group/msg flex flex-col gap-2 w-full">
+                                    {chatArray.map((chatObj: any, idx: number) => {
+                                        const charInfo = dbChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "System", avatar: "👤", hex: "#cccccc" };
+                                        const isLastItem = idx === chatArray.length - 1;
+
+                                        return (
+                                            <div key={`${i}-${idx}`} className="flex gap-2 items-start animate-fade-in-up relative">
+                                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 shadow-sm border border-black/5" style={{ backgroundColor: charInfo.hex }}>
+                                                    {charInfo.avatar}
+                                                </div>
+
+                                                <div className="flex flex-col gap-1 max-w-[70%]">
+                                                    <span className="text-[10px] text-gray-600 ml-1 font-bold">{charInfo.name}</span>
+                                                    <div className="bg-white text-gray-900 font-medium px-3 py-2 text-[14px] leading-relaxed shadow-sm rounded-2xl rounded-tl-sm break-words border border-black/5">
+                                                        {chatObj.text}
+                                                    </div>
+                                                </div>
+
+                                                {isLastItem && (
+                                                    <div className="flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 transition-opacity ml-1 mt-6">
+                                                        {i === activeGroup.messages.length - 1 && (
+                                                            <button
+                                                                onClick={() => handleRegenerate(activeGroupId)}
+                                                                className="p-1.5 text-gray-400 hover:text-blue-500 bg-white/80 rounded-full shadow-sm border border-gray-100"
+                                                                title="Regenerate"
+                                                            >
+                                                                <RefreshCcw size={12} />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDeleteMessage(activeGroupId, i)}
+                                                            className="p-1.5 text-gray-400 hover:text-red-500 bg-white/80 rounded-full shadow-sm border border-gray-100"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
                         }
                         return null;
                     })}
@@ -437,9 +494,37 @@ export const LimeInterface = ({
                 </div>
 
                 <div className="bg-[#F2F3F5] px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex items-end gap-2 shrink-0 border-t border-gray-200/80">
-                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors"><Plus size={24} /></button>
-                    <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Message..." className="flex-1 bg-white rounded-2xl px-4 py-2.5 max-h-24 outline-none resize-none text-[15px] text-gray-900 font-medium border border-gray-200 focus:border-emerald-400 transition-colors" rows={1} />
-                    <button disabled={isLoading || !input.trim()} onClick={() => handleSend()} className="p-2 text-[#32CC70] disabled:opacity-50 hover:brightness-110 shrink-0 hover:scale-110 transition-all"><Send size={24} /></button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <Plus size={24} />
+                    </button>
+                    
+                    <textarea 
+                        value={input} 
+                        onChange={e => setInput(e.target.value)} 
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} 
+                        placeholder="Message..." 
+                        className="flex-1 bg-white rounded-2xl px-4 py-2.5 max-h-24 outline-none resize-none text-[15px] text-gray-900 font-medium border border-gray-200 focus:border-emerald-400 transition-colors" 
+                        rows={1} 
+                    />
+                    
+                    {isLoading ? (
+                        <button 
+                            onClick={stopGeneration} 
+                            className="p-2 text-red-500 hover:text-red-600 shrink-0 hover:scale-110 transition-all animate-pulse"
+                            title="Stop Generating"
+                        >
+                            <Square fill="currentColor" size={24} />
+                        </button>
+                    ) : (
+                        <button 
+                            disabled={!input.trim()} 
+                            onClick={() => handleSend()} 
+                            className="p-2 text-[#32CC70] disabled:opacity-50 hover:brightness-110 shrink-0 hover:scale-110 transition-all"
+                            title="Send"
+                        >
+                            <Send size={24} />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
