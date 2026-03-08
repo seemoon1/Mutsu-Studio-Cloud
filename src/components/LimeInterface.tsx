@@ -1,6 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Phone, Menu, Send, Loader2, Brain, Save, Plus, Users, Settings, Smartphone, Clock, Globe, Trash2, Edit2, Cpu, X } from "lucide-react";
+import { 
+    ChevronLeft, Phone, Menu, Send, Loader2, 
+    Brain, Save, Plus, Users, Settings, Smartphone, 
+    Clock, Globe, Trash2, Edit2, Cpu, X, RefreshCcw
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 import { LimeChatGroup } from "../types";
@@ -19,7 +23,8 @@ const TIMELINE_OPTIONS = [
 ];
 
 export const LimeInterface = ({
-    currentSession, handleSend, input, setInput, isLoading, dbChars, onExit, updateSessionInfo
+    currentSession, handleSend, input, setInput, isLoading, dbChars, onExit, updateSessionInfo, 
+    apiProvider, setApiProvider, selectedModel, setSelectedModel, MODEL_DATA 
 }: any) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -124,8 +129,9 @@ export const LimeInterface = ({
     if (!activeGroupId) {
         return (
             <div className="fixed inset-0 z-[500] bg-[#f0f2f5] flex items-center justify-center p-4 md:p-8 font-sans">
-                <div className="w-full max-w-6xl h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex border border-gray-200">
-                    <div className="w-1/3 bg-gray-50 border-r border-gray-200 flex flex-col">
+                <div className="w-full max-w-6xl h-full bg-white md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
+                    
+                    <div className="w-full md:w-1/3 h-[40%] md:h-full bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col">
                         <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-white">
                             <div className="flex items-center gap-2 text-emerald-600 font-black text-xl"><Smartphone size={24} /> LIME HUB</div>
                             <button onClick={onExit} className="p-2 text-gray-400 hover:text-red-500"><ChevronLeft size={20} /></button>
@@ -143,7 +149,7 @@ export const LimeInterface = ({
                         </div>
                     </div>
 
-                    <div className="w-2/3 bg-white p-8 flex flex-col overflow-y-auto">
+                    <div className="w-full md:w-2/3 h-[60%] md:h-full bg-white p-4 md:p-8 flex flex-col overflow-y-auto">
                         {isCreating ? (
                             <div className="max-w-xl mx-auto w-full animate-fade-in-up space-y-6">
                                 <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
@@ -259,58 +265,72 @@ export const LimeInterface = ({
             <div className="w-full h-full sm:w-[420px] sm:h-[850px] sm:rounded-[50px] sm:border-[14px] sm:border-black overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]" style={{ backgroundColor: LIME_BG }} onClick={e => e.stopPropagation()}>
 
                 <div className="bg-[#2B2C2E] text-white px-4 py-3 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between shrink-0 z-20 shadow-md relative">
-                    <div className="flex flex-col min-w-0 flex-1">
-                        {isRenaming ? (
-                            <input
-                                autoFocus
-                                value={renameText}
-                                onChange={e => setRenameText(e.target.value)}
-                                onBlur={handleRenameGroup}
-                                onKeyDown={e => e.key === 'Enter' && handleRenameGroup()}
-                                className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]"
-                            />
-                        ) : (
-                            <div
-                                className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`}
-                                onClick={() => {
-                                    if (activeGroup?.type === 'group') {
-                                        setIsRenaming(true);
-                                        setRenameText(activeGroup?.name || "");
-                                    }
-                                }}
-                            >
-                                <span className="font-bold text-[15px] truncate max-w-[130px]">{displayTitle}</span>
-                                {activeGroup?.type === 'group' && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 text-gray-400" />}
-                            </div>
-                        )}
-
-                        <span className="text-[10px] text-white/50 truncate flex items-center gap-1">
-                            {activeGroup?.type === 'duo' ? (
-                                <>
-                                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-                                    POV: {dbChars.find((c: any) => c.id === activeGroup.defaultPovChar)?.name}
-                                </>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <button onClick={() => setActiveGroupId(null)} className="hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors shrink-0 z-50 cursor-pointer pointer-events-auto">
+                            <ChevronLeft size={28} />
+                        </button>
+                        
+                        <div className="flex flex-col min-w-0 flex-1">
+                            {isRenaming ? (
+                                <input autoFocus value={renameText} onChange={e => setRenameText(e.target.value)} onBlur={handleRenameGroup} onKeyDown={e => e.key === 'Enter' && handleRenameGroup()} className="bg-[#1A1A1A] text-white text-[15px] font-bold px-2 py-0.5 rounded outline-none border border-emerald-500 w-[140px]"/>
                             ) : (
-                                <>{activeGroup?.members.length} members • {activeGroup?.reality === 'au' ? 'AU World' : `T-${activeGroup?.timeline}`}</>
+                                <div className={`flex items-center gap-1 ${activeGroup?.type === 'group' ? 'group cursor-pointer' : ''}`} onClick={() => { if (activeGroup?.type === 'group') { setIsRenaming(true); setRenameText(activeGroup?.name || ""); }}}>
+                                    <span className="font-bold text-[15px] truncate max-w-[130px]">{displayTitle}</span>
+                                    {activeGroup?.type === 'group' && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 text-gray-400" />}
+                                </div>
                             )}
-                        </span>
+                            <span className="text-[10px] text-white/50 truncate flex items-center gap-1">
+                                {activeGroup?.type === 'duo' ? (
+                                    <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>POV: {dbChars.find((c:any) => c.id === activeGroup.defaultPovChar)?.name}</>
+                                ) : (
+                                    <>{activeGroup?.members.length} members • {activeGroup?.reality === 'au' ? 'AU World' : `T-${activeGroup?.timeline}`}</>
+                                )}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-gray-300 shrink-0 ml-2">
-                        <button onClick={() => { setShowMemory(!showMemory); setShowMemberManage(false); setShowModelMenu(false); }} className={`transition-colors ${showMemory ? 'text-[#32CC70]' : 'hover:text-white'}`}><Brain size={20} /></button>
-                        {activeGroup?.type === 'group' && (
-                            <button onClick={() => { setShowMemberManage(!showMemberManage); setShowMemory(false); setShowModelMenu(false); }} className={`transition-colors ${showMemberManage ? 'text-[#32CC70]' : 'hover:text-white'}`}><Users size={20} /></button>
-                        )}
+                    <div className="flex items-center gap-6 text-gray-300 shrink-0 ml-4">
+                        <button onClick={() => { setShowMemory(!showMemory); setShowMemberManage(false); setShowModelMenu(false); }} className={`transition-colors ${showMemory ? 'text-[#32CC70]' : 'hover:text-white'}`}><Brain size={22} /></button>
+                        
+                        <button onClick={() => { setShowMemberManage(!showMemberManage); setShowMemory(false); setShowModelMenu(false); }} className={`transition-colors ${showMemberManage ? 'text-[#32CC70]' : 'hover:text-white'}`}>
+                            {activeGroup?.type === 'group' ? <Users size={22} /> : <RefreshCcw size={22} />}
+                        </button>
+                        
                         <button onClick={() => { setShowModelMenu(!showModelMenu); setShowMemory(false); setShowMemberManage(false); }} className={`transition-colors ${showModelMenu ? 'text-[#32CC70]' : 'hover:text-white'}`}><Menu size={24} /></button>
                     </div>
                 </div>
 
                 <AnimatePresence>
                     {showModelMenu && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-4 bg-[#2B2C2E] border border-gray-700 rounded-xl shadow-xl z-50 w-48 p-2">
-                            <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-1 flex items-center gap-2"><Cpu size={12} /> System Config</div>
-                            <div className="px-3 py-2 text-xs text-emerald-400 hover:bg-white/10 rounded-lg cursor-pointer transition-colors">Model settings apply globally.</div>
-                            <div className="px-3 py-2 text-[10px] text-gray-500">To change API models, please use the Main Sidebar.</div>
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-4 bg-[#2B2C2E] border border-gray-700 rounded-xl shadow-xl z-50 w-64 p-3">
+                            <div className="px-1 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-3 flex items-center gap-2">
+                                <Cpu size={12}/> API & Model Config
+                            </div>
+                            
+                            <div className="flex bg-black/40 p-1 rounded-lg mb-3">
+                                <button onClick={() => setApiProvider('deepseek')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'deepseek' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Domestic</button>
+                                <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'openrouter' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Router</button>
+                                <button onClick={() => setApiProvider('google')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'google' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Google</button>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-gray-400 font-bold">Select Model</label>
+                                <select 
+                                    value={selectedModel}
+                                    onChange={(e) => setSelectedModel(e.target.value)}
+                                    className="w-full bg-[#1A1A1A] border border-gray-600 text-white text-xs rounded-lg px-2 py-2 outline-none focus:border-emerald-500"
+                                >
+                                    {MODEL_DATA?.filter((g: any) => {
+                                        const gn = g.groupName.toLowerCase();
+                                        if (apiProvider === 'deepseek') return gn.includes("domestic");
+                                        if (apiProvider === 'google') return gn.includes("google") || gn.includes("gemini");
+                                        if (apiProvider === 'openrouter') return !gn.includes("domestic") && !gn.includes("google");
+                                        return true;
+                                    }).flatMap((g: any) => g.models).map((m: any) => (
+                                        <option key={m.id} value={m.id}>{m.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

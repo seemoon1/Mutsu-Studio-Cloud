@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Loader2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CHARACTERS, Session } from "../types";
+import { CHARACTERS, Session, MODEL_DATA } from "../types";
 import { CHAR_DATA } from "../data/char_config";
 import LOCAL_LIVE2D_CONFIG from "../data/live2d_config.json";
 import { WorldInfoModal, EditModal, ApiKeysModal, ImageViewerModal } from "../components/Modals";
@@ -414,6 +414,11 @@ export default function Home() {
                     isLoading={limeEngine.isLoading}
                     dbChars={CHAR_DATA}
                     updateSessionInfo={(id: string, up: any) => cloud.setSessions(p => p.map(s => s.id === id ? { ...s, ...up } : s))}
+                    apiProvider={apiProvider}
+                    setApiProvider={setApiProvider}
+                    selectedModel={config.selectedModel}
+                    setSelectedModel={(v: string) => setConfig(prev => ({ ...prev, selectedModel: v }))}
+                    MODEL_DATA={MODEL_DATA}
                     setSessions={cloud.setSessions}
                     onExit={() => {
                         const lastReality = cloud.sessions.find(s => s.id !== currentSessionId && s.memoryMode === 'sliding');
