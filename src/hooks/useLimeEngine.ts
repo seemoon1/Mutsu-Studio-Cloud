@@ -65,7 +65,7 @@ export const useLimeEngine = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: history,
-          model: "google/gemini-3.0-flash-preview",
+          model: "google/gemini-3-flash-preview",
           memoryMode: "lime",
 
           limeGroupId: activeGroupId,
