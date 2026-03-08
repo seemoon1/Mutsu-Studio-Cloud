@@ -375,45 +375,64 @@ ${COLOR_INSTRUCTION}
       const allowedIdsList = memberIds.join(", ");
       memberIds.forEach((mid: string) => {
         const char = CHAR_DATA.find((c) => c.id === mid);
-        if (char) groupLore += `---[${char.name}] ---\n${char.lore || ""}\n`;
+        if (char) groupLore += `--- [${char.name}] ---\n${char.lore || ""}\n`;
       });
+
+      const groupNameHeader =
+        groupType === "duo"
+          ? `[CHAT TYPE]: 1-on-1 Private Direct Message`
+          : `[GROUP NAME]: "${groupName}" (Context: The characters can SEE this group name. React to it if it's weird.)`;
 
       finalSystemPrompt += `
 === 📱 LIME CHAT ENGINE ===
 [ROLE]: You are the server backend rendering a simulated chat app.
 [WORLD RULE]: ${currentWorldRule}
-[GROUP NAME]: "${groupName}"
+${groupNameHeader}
 
 [CHARACTER LORE]:
 ${groupLore}
 
 [CRITICAL RULE FOR "charId" FIELD]:
-When generating the JSON output, the "charId" field MUST strictly match one of these exact IDs: [${allowedIdsList}], or "system". 
-DO NOT invent IDs or use romaji names (e.g., use "mutsu" instead of "mutsumi", use "soyo" instead of "soyose"). Violating this will crash the frontend rendering!
+When generating the JSON output, the "charId" field MUST strictly match one of these exact IDs:[${allowedIdsList}], or "system". 
+DO NOT invent IDs or use romaji names. Violating this will crash the frontend rendering!
+
+[MODE INSTRUCTION]:
 `;
 
       if (groupType === "duo") {
+        const povName =
+          CHAR_DATA.find((c) => c.id === povCharId)?.name || "User";
+        const otherCharId = memberIds.find((id: string) => id !== povCharId);
+        const otherName =
+          CHAR_DATA.find((c) => c.id === otherCharId)?.name ||
+          "The Other Character";
+
         finalSystemPrompt += `
-This is a 1-on-1 private chat (Duo Mode). 
-The screen belongs to: [${CHAR_DATA.find((c) => c.id === povCharId)?.name || "User"}]. 
-The User's input is a **DIRECTOR'S INSTRUCTION** (e.g., "(Make her angry)").
-You must act as the OTHER character texting the POV character based on that instruction.
-DO NOT reply to the user. Reply TO the POV character AS the target character.
+This is a 1-on-1 private chat between ${povName} and ${otherName}. 
+The smartphone screen currently belongs to: [${povName}]. 
+The User's input is strictly a **DIRECTOR'S INSTRUCTION / SYSTEM COMMAND** (e.g., "Director's Instruction: Make Sakiko angry"). 
+The User is NOT a participant in the chat.
+
+YOUR TASK: You must act as BOTH ${povName} and ${otherName}. 
+Generate the natural back-and-forth text messages for BOTH characters based on the Director's instruction. Let them converse with each other!
+
+[SPECIAL DUO POWERS]: 
+If ${otherName} feels extreme anger, betrayal, or annoyance, they can BLOCK ${povName} or CHANGE THEIR NICKNAME maliciously. 
+To do this, output: { "charId": "system", "text": "[SYSTEM]: You have been blocked by this user." }
 `;
       } else {
-        finalSystemPrompt += `This is a Group Chat. Generate organic interaction between the members. If a character is currently missing/angry based on the timeline (e.g. Soyo in Haruhikage), they should NOT reply.`;
+        finalSystemPrompt += `This is a Group Chat. Generate organic interaction between the members reacting to the latest message. If a character is currently missing/angry based on the timeline (e.g. Soyo in Haruhikage), they should NOT reply.`;
       }
 
       finalSystemPrompt += `
 [OUTPUT FORMAT]:
 You MUST return ONLY a JSON array wrapped in <lime_chat>.
 Make the chat natural, highly immersive, and lively. 
-⚠️ You are HIGHLY ENCOURAGED to use emojis (🥺, 💢, ✨, 🎸, etc.) in the "text" field to express emotions and simulate real smartphone chatting habits!
+⚠️ You are HIGHLY ENCOURAGED to use emojis (🥺, 💢, ✨, 🎸, etc.) in the "text" field to express emotions!
 
 <lime_chat>[
   { "charId": "anon", "text": "大家今天来不来呀？🥺" },
-  { "charId": "soyo", "text": "Don't ever message me again. 💢" },
-  { "charId": "system", "text": "[SYSTEM]: You have been blocked." }
+  { "charId": "soyo", "text": "Don't ever message me again. 💢" }
 ]
 </lime_chat>
 `;
