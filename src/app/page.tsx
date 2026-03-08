@@ -246,21 +246,16 @@ export default function Home() {
 
         const remainingSessions = cloud.sessions.filter(s => s.id !== id);
 
-        const realitySessions = remainingSessions.filter(s => s.memoryMode !== 'novel');
+        const validNextSession = remainingSessions.find(s => s.memoryMode !== 'lime');
 
         let finalSessions = remainingSessions;
         let nextSessionId = currentSessionId;
         let nextCharId = activeCharacterId;
 
         if (id === currentSessionId) {
-            if (realitySessions.length > 0) {
-                const next = realitySessions[0];
-                nextSessionId = next.id;
-                nextCharId = next.characterId;
-            } else if (remainingSessions.length > 0) {
-                const next = remainingSessions[0];
-                nextSessionId = next.id;
-                nextCharId = next.characterId;
+            if (validNextSession) {
+                nextSessionId = validNextSession.id;
+                nextCharId = validNextSession.characterId;
             } else {
                 nextSessionId = "GENESIS";
             }
@@ -283,7 +278,7 @@ export default function Home() {
                 updatedAt: Date.now()
             };
 
-            finalSessions = [genesisSession];
+            finalSessions = [genesisSession, ...remainingSessions];
             nextSessionId = genesisId;
             nextCharId = "mutsu";
 
