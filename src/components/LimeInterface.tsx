@@ -283,9 +283,8 @@ export const LimeInterface = ({
                                             className="w-full bg-white border-2 border-gray-300 rounded-xl p-3 text-sm font-bold text-gray-900 outline-none focus:border-emerald-500"
                                         >
                                             <option value="outsider">Outsider (Director / 导演模式)</option>
-                                            {selectedMembers.length !== 2 && <option value="insider">Insider (Roleplay / 沉浸模式)</option>}
+                                            <option value="insider">Insider (Actor / 演员模式)</option>
                                         </select>
-                                        {selectedMembers.length === 2 && <p className="text-[10px] text-orange-500 mt-1 font-bold">* Duo Mode is locked to Director View (Peeking).</p>}
                                     </div>
 
 
