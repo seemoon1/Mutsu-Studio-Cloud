@@ -118,6 +118,7 @@ export const useChatEngine = ({
       deepseek: localStorage.getItem("mutsu_key_deepseek") || "",
       openrouter: localStorage.getItem("mutsu_key_openrouter") || "",
       google: localStorage.getItem("mutsu_key_google") || "",
+      siliconflow: localStorage.getItem("mutsu_key_siliconflow") || "",
       tavily: localStorage.getItem("mutsu_key_tavily") || "",
       volcengine: localStorage.getItem("mutsu_key_volcengine") || "",
       volc_ep_image: localStorage.getItem("mutsu_key_volc_ep_image") || "",

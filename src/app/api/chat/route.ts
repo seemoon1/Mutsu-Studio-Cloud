@@ -777,7 +777,38 @@ Make the chat natural, highly immersive, and lively.
       return new Response(readable, {
         headers: { "Content-Type": "text/event-stream" },
       });
-    } else {
+    } else if (provider === "siliconflow") {
+        const rawKey = localKeys?.siliconflow || process.env.SILICONFLOW_API_KEY || "";
+        const apiKey = rawKey.trim();
+
+        if (!apiKey) throw new Error("Missing SiliconFlow API Key! 请在左侧边栏🔑配置密钥。");
+
+        const client = new OpenAI({
+          apiKey: apiKey,
+          baseURL: "https://api.siliconflow.cn/v1",
+        });
+
+        const fullMessages = [{ role: "system", content: finalSystemPrompt }, ...messages];
+        const stream = await client.chat.completions.create({
+          model: model || "deepseek-ai/DeepSeek-V3.2",
+          messages: fullMessages,
+          stream: true,
+          temperature: temperature,
+        });
+
+        const encoder = new TextEncoder();
+        const readable = new ReadableStream({
+          async start(controller) {
+            for await (const chunk of stream) {
+              const text = chunk.choices[0]?.delta?.content || "";
+              if (text) controller.enqueue(encoder.encode(text));
+            }
+            controller.close();
+          },
+        });
+        return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });
+
+      } else {
       const rawKey =
         localKeys?.openrouter || process.env.OPENROUTER_API_KEY || "";
       const apiKey = rawKey.trim();

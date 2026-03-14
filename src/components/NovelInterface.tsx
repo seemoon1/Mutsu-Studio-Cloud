@@ -603,10 +603,11 @@ export const NovelInterface = ({
                                         >
                                             {MODEL_DATA
                                                 .filter(g => {
-                                                    const groupName = g.groupName.toLowerCase();
-                                                    if (apiProvider === 'deepseek') return groupName.includes("domestic");
-                                                    if (apiProvider === 'google') return groupName.includes("google") || groupName.includes("gemini");
-                                                    if (apiProvider === 'openrouter') return !groupName.includes("domestic") && !groupName.includes("google");
+                                                    const gn = g.groupName.toLowerCase();
+                                                    if (apiProvider === 'deepseek') return gn.includes("domestic");
+                                                    if (apiProvider === 'google') return gn.includes("gemini (google)");
+                                                    if (apiProvider === 'siliconflow') return gn.includes("siliconflow");
+                                                    if (apiProvider === 'openrouter') return gn.includes("openrouter");
                                                     return true;
                                                 })
                                                 .flatMap(g => g.models)
@@ -623,7 +624,8 @@ export const NovelInterface = ({
                                         </label>
                                         <div className="flex bg-black/20 p-1 rounded-xl">
                                             <button onClick={() => setApiProvider('deepseek')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${apiProvider === 'deepseek' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>Domestic</button>
-                                            <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${apiProvider === 'openrouter' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>OpenRouter</button>
+                                            <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${apiProvider === 'openrouter' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>Router</button>
+                                            <button onClick={() => setApiProvider('siliconflow')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${apiProvider === 'siliconflow' ? 'bg-cyan-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>Silicon</button>
                                             <button onClick={() => setApiProvider('google')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${apiProvider === 'google' ? 'bg-emerald-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>Google</button>
                                         </div>
                                     </div>

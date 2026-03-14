@@ -134,15 +134,17 @@ export const SidebarLeft = ({
 
                                 <div className="mb-3 bg-gray-100 p-1 rounded-lg flex text-[10px] font-bold">
                                     <button onClick={() => setApiProvider('deepseek')} className={`flex-1 py-1.5 rounded transition-all ${apiProvider === 'deepseek' ? 'bg-white shadow text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>Domestic</button>
-                                    <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 rounded transition-all ${apiProvider === 'openrouter' ? 'bg-white shadow text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>OpenRouter</button>
+                                    <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 rounded transition-all ${apiProvider === 'openrouter' ? 'bg-white shadow text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>Router</button>
+                                    <button onClick={() => setApiProvider('siliconflow')} className={`flex-1 py-1.5 rounded transition-all ${apiProvider === 'siliconflow' ? 'bg-white shadow text-cyan-600' : 'text-gray-400 hover:text-gray-600'}`}>Silicon</button>
                                     <button onClick={() => setApiProvider('google')} className={`flex-1 py-1.5 rounded transition-all ${apiProvider === 'google' ? 'bg-white shadow text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}>Google</button>
                                 </div>
 
                                 {MODEL_DATA.filter((g: any) => {
-                                    const groupName = g.groupName.toLowerCase();
-                                    if (apiProvider === 'deepseek') return groupName.includes("domestic");
-                                    if (apiProvider === 'google') return groupName.includes("google") || groupName.includes("gemini");
-                                    if (apiProvider === 'openrouter') return !groupName.includes("domestic") && !groupName.includes("google");
+                                    const gn = g.groupName.toLowerCase();
+                                    if (apiProvider === 'deepseek') return gn.includes("domestic");
+                                    if (apiProvider === 'google') return gn.includes("gemini (google)");
+                                    if (apiProvider === 'siliconflow') return gn.includes("siliconflow");
+                                    if (apiProvider === 'openrouter') return gn.includes("openrouter");
                                     return true;
                                 }).map((g: any) => (
                                     <div key={g.groupName} className="mb-1">
