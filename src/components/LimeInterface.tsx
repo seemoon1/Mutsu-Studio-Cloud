@@ -434,6 +434,7 @@ export const LimeInterface = ({
                             <div className="flex bg-black/40 p-1 rounded-lg mb-3">
                                 <button onClick={() => setApiProvider('deepseek')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'deepseek' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Domestic</button>
                                 <button onClick={() => setApiProvider('openrouter')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'openrouter' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Router</button>
+                                <button onClick={() => setApiProvider('siliconflow')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'siliconflow' ? 'bg-cyan-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Silicon</button>
                                 <button onClick={() => setApiProvider('google')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${apiProvider === 'google' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}>Google</button>
                             </div>
 
@@ -447,8 +448,9 @@ export const LimeInterface = ({
                                     {MODEL_DATA?.filter((g: any) => {
                                         const gn = g.groupName.toLowerCase();
                                         if (apiProvider === 'deepseek') return gn.includes("domestic");
-                                        if (apiProvider === 'google') return gn.includes("google") || gn.includes("gemini");
-                                        if (apiProvider === 'openrouter') return !gn.includes("domestic") && !gn.includes("google");
+                                        if (apiProvider === 'google') return gn.includes("gemini (google)");
+                                        if (apiProvider === 'siliconflow') return gn.includes("siliconflow");
+                                        if (apiProvider === 'openrouter') return gn.includes("openrouter");
                                         return true;
                                     }).flatMap((g: any) => g.models).map((m: any) => (
                                         <option key={m.id} value={m.id}>{m.name}</option>

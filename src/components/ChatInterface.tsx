@@ -437,10 +437,20 @@ export const ChatInterface = ({
         <>
             {currentSession?.memoryMode === 'sliding' && (
                 <>
-                    <button onClick={toggleSaveModal} className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold border bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600 hover:bg-fuchsia-100 ${isMobile ? 'w-full justify-center' : ''}`}><Save size={16} /> <span className={isMobile ? "inline" : "hidden md:inline"}>Save</span></button>
-                    <div className={`flex gap-1 ${isMobile ? 'w-full justify-center' : ''}`}>
-                        <button onClick={() => setShowLocalWorld(true)} className="p-1.5 hover:bg-gray-100 rounded text-gray-500 flex items-center gap-1 text-xs"><StickyNote size={16} /> <span className={isMobile ? "inline" : "hidden lg:inline"}>Local</span></button>
-                        <button onClick={() => setShowGlobalWorld(true)} className="p-1.5 hover:bg-gray-100 rounded text-gray-500 flex items-center gap-1 text-xs"><BookOpen size={16} /> <span className={isMobile ? "inline" : "hidden lg:inline"}>Global</span></button>
+                    <button onClick={toggleSaveModal} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600 hover:bg-fuchsia-100 transition-all ${isMobile ? 'w-full justify-center shadow-sm' : ''}`}>
+                        <Save size={16} /> 
+                        <span className={isMobile ? "inline" : "hidden md:inline"}>Save</span>
+                    </button>
+                    
+                    <div className={`flex gap-2 ${isMobile ? 'w-full grid grid-cols-2' : ''}`}>
+                        <button onClick={() => setShowLocalWorld(true)} className={`p-2 hover:bg-gray-100 rounded-xl text-gray-600 flex items-center justify-center gap-1 text-xs border border-gray-200 bg-white shadow-sm transition-all ${isMobile ? 'w-full' : ''}`}>
+                            <StickyNote size={14} className="text-blue-500" /> 
+                            <span className={isMobile ? "inline font-bold" : "hidden lg:inline"}>Local</span>
+                        </button>
+                        <button onClick={() => setShowGlobalWorld(true)} className={`p-2 hover:bg-gray-100 rounded-xl text-gray-600 flex items-center justify-center gap-1 text-xs border border-gray-200 bg-white shadow-sm transition-all ${isMobile ? 'w-full' : ''}`}>
+                            <BookOpen size={14} className="text-purple-500" /> 
+                            <span className={isMobile ? "inline font-bold" : "hidden lg:inline"}>Global</span>
+                        </button>
                     </div>
                 </>
             )}
