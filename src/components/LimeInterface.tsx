@@ -46,7 +46,7 @@ export const LimeInterface = ({
     const [newGroupPov, setNewGroupPov] = useState<'outsider' | 'insider'>('outsider');
     const [newGroupTimeline, setNewGroupTimeline] = useState("5-6");
     const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-    const [newPlayerName, setNewPlayerName] = useState("玩家");
+    const [newPlayerName, setNewPlayerName] = useState("用户");
     const [showPlayerNameEditor, setShowPlayerNameEditor] = useState(false);
 
     const [localStm, setLocalStm] = useState(currentSession?.stm || "");
@@ -57,8 +57,8 @@ export const LimeInterface = ({
 
     const makePlayerChar = (name?: string) => ({
         id: "user",
-        name: (name || "玩家").trim() || "玩家",
-        sub: "Player / 玩家",
+        name: (name || "用户").trim() || "用户",
+        sub: "User / 用户",
         hex: "#6A5ACD",
         avatar: "👤",
     });
@@ -96,7 +96,7 @@ export const LimeInterface = ({
         const finalPov = newGroupPov;
 
         if (finalPov === 'insider' && !selectedMembers.includes('user')) {
-            alert("Actor / 演员模式需要勾选 Player / 玩家。");
+            alert("Actor / 演员模式需要勾选 User / 用户。");
             return;
         }
 
@@ -134,7 +134,7 @@ export const LimeInterface = ({
             auContext: newGroupAuContext,
             timeline: newGroupTimeline,
             members: selectedMembers,
-            playerName: selectedMembers.includes('user') ? ((newPlayerName || "玩家").trim() || "玩家") : undefined,
+            playerName: selectedMembers.includes('user') ? ((newPlayerName || "用户").trim() || "用户") : undefined,
             defaultPovChar: defaultPov,
             messages: [],
             createdAt: Date.now(),
@@ -145,7 +145,7 @@ export const LimeInterface = ({
             limeGroups: [newGroup, ...limeGroups],
             limeGroupId: newGroup.id
         });
-        setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setNewPlayerName("玩家"); setShowPlayerNameEditor(false); setActiveGroupId(newGroup.id);
+        setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setNewPlayerName("用户"); setShowPlayerNameEditor(false); setActiveGroupId(newGroup.id);
     };
 
     const handleDeleteGroup = (id: string, e: any) => {
@@ -287,7 +287,7 @@ export const LimeInterface = ({
                                                             type="button"
                                                             onClick={(e) => { e.stopPropagation(); setShowPlayerNameEditor(v => !v); }}
                                                             className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-md hover:bg-black transition-colors"
-                                                            title="自定义玩家名称"
+                                                            title="自定义用户名称"
                                                         >
                                                             <Settings size={13} />
                                                         </button>
@@ -298,13 +298,13 @@ export const LimeInterface = ({
                                     </div>
                                     {showPlayerNameEditor && (
                                         <div className="mt-3 flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-xl p-2">
-                                            <span className="text-[10px] font-bold text-violet-600 whitespace-nowrap">玩家名称</span>
+                                            <span className="text-[10px] font-bold text-violet-600 whitespace-nowrap">用户名称</span>
                                             <input
                                                 autoFocus
                                                 value={newPlayerName}
                                                 onChange={e => setNewPlayerName(e.target.value)}
                                                 maxLength={24}
-                                                placeholder="玩家"
+                                                placeholder="用户"
                                                 className="flex-1 min-w-0 bg-white border border-violet-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-violet-500"
                                             />
                                             <button type="button" onClick={() => setShowPlayerNameEditor(false)} className="p-2 text-gray-400 hover:text-gray-700"><X size={15} /></button>
@@ -475,7 +475,7 @@ export const LimeInterface = ({
                                             <button
                                                 key={c.id}
                                                 disabled={isPlayer && activeGroup?.pov === 'insider'}
-                                                title={isPlayer ? 'Player / 玩家由 Actor 模式固定加入' : undefined}
+                                                title={isPlayer ? 'User / 用户由 Actor 模式固定加入' : undefined}
                                                 onClick={() => handleUpdateMembers(isIn ? (activeGroup?.members.filter(m => m !== c.id) || []) : [...(activeGroup?.members || []), c.id])}
                                                 className={`flex flex-col items-center p-2 rounded-xl border transition-all ${isIn ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-200' : 'bg-white border-gray-100 opacity-50 grayscale'} ${isPlayer ? 'cursor-default' : ''}`}
                                             >

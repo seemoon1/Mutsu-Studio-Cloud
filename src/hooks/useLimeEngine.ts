@@ -131,7 +131,7 @@ export const useLimeEngine = ({
           limeReality: activeGroup.reality,
           limeAuContext: activeGroup.auContext,
           limeGroupMembers: activeGroup.members,
-          limePlayerName: activeGroup.playerName || "玩家",
+          limePlayerName: activeGroup.playerName || "用户",
 
           provider: apiProvider,
           localKeys: {
