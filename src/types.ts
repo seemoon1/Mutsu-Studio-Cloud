@@ -107,6 +107,7 @@ export type LimeChatGroup = {
     auLabel?: string;
     timeline: number | string;
     members: string[];
+    playerName?: string;
     defaultPovChar?: string;
     isBlocked?: boolean;
     stm?: string;

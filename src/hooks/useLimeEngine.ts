@@ -84,8 +84,8 @@ export const useLimeEngine = ({
     setInput("");
     setIsLoading(true);
 
-    const isDuo = activeGroup.type === "duo";
-    const finalContent = isDuo ? `(Director's Instruction: ${txt})` : txt;
+    const isDirectorMode = activeGroup.pov === "outsider";
+    const finalContent = isDirectorMode ? `(Director's Instruction: ${txt})` : txt;
 
     const userMsg = {
       role: "user",
@@ -127,9 +127,11 @@ export const useLimeEngine = ({
           limeTimeline: activeGroup.timeline,
           limeGroupType: activeGroup.type,
           limePovChar: activeGroup.defaultPovChar,
+          limePov: activeGroup.pov,
           limeReality: activeGroup.reality,
           limeAuContext: activeGroup.auContext,
           limeGroupMembers: activeGroup.members,
+          limePlayerName: activeGroup.playerName || "玩家",
 
           provider: apiProvider,
           localKeys: {

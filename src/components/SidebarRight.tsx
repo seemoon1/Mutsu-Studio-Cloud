@@ -201,7 +201,7 @@ const SidebarRightComponent = ({
                                         <div className="p-3 relative z-10">
                                             <div className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider flex items-center gap-1"><User size={10} /> Protagonist</div>
                                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div className="text-gray-500">Name: <span className="font-bold text-[#6A5ACD]">月 (Yue)</span></div>
+                                                <div className="text-gray-500">Name: <span className="font-bold text-[#6A5ACD]">{prota.name || "User"}</span></div>
                                                 <div className="text-gray-500">Time: <span className="text-gray-800">{prota.timeDesc}</span></div>
                                                 <div className="text-gray-500 col-span-2">Env: <span className="text-gray-800">{prota.environment}</span></div>
                                                 <div className="text-gray-500 col-span-2 flex items-center gap-1"><Thermometer size={10} /> {prota.temperature} | {prota.sensation}</div>

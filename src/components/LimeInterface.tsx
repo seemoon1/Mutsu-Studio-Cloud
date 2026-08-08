@@ -46,12 +46,24 @@ export const LimeInterface = ({
     const [newGroupPov, setNewGroupPov] = useState<'outsider' | 'insider'>('outsider');
     const [newGroupTimeline, setNewGroupTimeline] = useState("5-6");
     const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+    const [newPlayerName, setNewPlayerName] = useState("玩家");
+    const [showPlayerNameEditor, setShowPlayerNameEditor] = useState(false);
 
     const [localStm, setLocalStm] = useState(currentSession?.stm || "");
     const [localLtm, setLocalLtm] = useState(currentSession?.ltm || "");
 
     const limeGroups: LimeChatGroup[] = currentSession?.limeGroups || [];
     const activeGroup = limeGroups.find(g => g.id === activeGroupId);
+
+    const makePlayerChar = (name?: string) => ({
+        id: "user",
+        name: (name || "玩家").trim() || "玩家",
+        sub: "Player / 玩家",
+        hex: "#6A5ACD",
+        avatar: "👤",
+    });
+    const creationChars = [makePlayerChar(newPlayerName), ...dbChars.filter((c: any) => c.id !== 'user')];
+    const activeLimeChars = [makePlayerChar(activeGroup?.playerName), ...dbChars.filter((c: any) => c.id !== 'user')];
 
     const [newGroupReality, setNewGroupReality] = useState<'canon' | 'au'>('canon');
     const [newGroupAuContext, setNewGroupAuContext] = useState("");
@@ -81,8 +93,16 @@ export const LimeInterface = ({
 
         const isDuo = selectedMembers.length === 2;
         const type = isDuo ? 'duo' : 'group';
-        const defaultPov = isDuo ? selectedMembers[0] : undefined;
         const finalPov = newGroupPov;
+
+        if (finalPov === 'insider' && !selectedMembers.includes('user')) {
+            alert("Actor / 演员模式需要勾选 Player / 玩家。");
+            return;
+        }
+
+        const defaultPov = isDuo
+            ? (finalPov === 'insider' && selectedMembers.includes('user') ? 'user' : selectedMembers[0])
+            : undefined;
 
         let finalGroupName = newGroupName.trim();
 
@@ -114,6 +134,7 @@ export const LimeInterface = ({
             auContext: newGroupAuContext,
             timeline: newGroupTimeline,
             members: selectedMembers,
+            playerName: selectedMembers.includes('user') ? ((newPlayerName || "玩家").trim() || "玩家") : undefined,
             defaultPovChar: defaultPov,
             messages: [],
             createdAt: Date.now(),
@@ -124,7 +145,7 @@ export const LimeInterface = ({
             limeGroups: [newGroup, ...limeGroups],
             limeGroupId: newGroup.id
         });
-        setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setActiveGroupId(newGroup.id);
+        setIsCreating(false); setNewGroupName(""); setSelectedMembers([]); setNewPlayerName("玩家"); setShowPlayerNameEditor(false); setActiveGroupId(newGroup.id);
     };
 
     const handleDeleteGroup = (id: string, e: any) => {
@@ -243,27 +264,52 @@ export const LimeInterface = ({
                                         Members / 成员 ({selectedMembers.length})
                                     </label>
                                     <div className="grid grid-cols-4 gap-3">
-                                        {dbChars.map((c: any) => {
+                                        {creationChars.map((c: any) => {
                                             const isSelected = selectedMembers.includes(c.id);
                                             const isUser = c.id === 'user';
                                             const isDisabled = isUser && newGroupPov === 'outsider';
 
                                             return (
-                                                <button
-                                                    key={c.id}
-                                                    onClick={() => !isDisabled && toggleMember(c.id)}
-                                                    disabled={isDisabled}
-                                                    className={`p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isDisabled ? 'bg-gray-200 border-gray-300 opacity-30 cursor-not-allowed grayscale' :
-                                                        isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm' :
-                                                            'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
-                                                        }`}
-                                                >
-                                                    <span className="text-2xl drop-shadow-sm">{c.avatar}</span>
-                                                    <span className="text-[11px] font-bold truncate w-full text-center">{c.name}</span>
-                                                </button>
+                                                <div key={c.id} className="relative">
+                                                    <button
+                                                        onClick={() => !isDisabled && toggleMember(c.id)}
+                                                        disabled={isDisabled}
+                                                        className={`w-full p-2 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${isDisabled ? 'bg-gray-200 border-gray-300 opacity-30 cursor-not-allowed grayscale' :
+                                                            isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm' :
+                                                                'bg-gray-50 border-gray-200 text-gray-500 hover:border-emerald-300 hover:bg-white'
+                                                            }`}
+                                                    >
+                                                        <span className="text-2xl drop-shadow-sm">{c.avatar}</span>
+                                                        <span className="text-[11px] font-bold truncate w-full text-center">{c.name}</span>
+                                                    </button>
+                                                    {isUser && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); setShowPlayerNameEditor(v => !v); }}
+                                                            className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-md hover:bg-black transition-colors"
+                                                            title="自定义玩家名称"
+                                                        >
+                                                            <Settings size={13} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )
                                         })}
                                     </div>
+                                    {showPlayerNameEditor && (
+                                        <div className="mt-3 flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-xl p-2">
+                                            <span className="text-[10px] font-bold text-violet-600 whitespace-nowrap">玩家名称</span>
+                                            <input
+                                                autoFocus
+                                                value={newPlayerName}
+                                                onChange={e => setNewPlayerName(e.target.value)}
+                                                maxLength={24}
+                                                placeholder="玩家"
+                                                className="flex-1 min-w-0 bg-white border border-violet-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-violet-500"
+                                            />
+                                            <button type="button" onClick={() => setShowPlayerNameEditor(false)} className="p-2 text-gray-400 hover:text-gray-700"><X size={15} /></button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-200">
@@ -334,7 +380,7 @@ export const LimeInterface = ({
 
     if (activeGroup && activeGroup.type === 'duo' && activeGroup.members?.length === 2) {
         const otherCharId = activeGroup.members.find((m: string) => m !== activeGroup.defaultPovChar);
-        const otherChar = dbChars.find((c: any) => c.id === otherCharId);
+        const otherChar = activeLimeChars.find((c: any) => c.id === otherCharId);
         displayTitle = otherChar ? otherChar.name : "Unknown";
     }
 
@@ -359,7 +405,7 @@ export const LimeInterface = ({
                             )}
                             <span className="text-[10px] text-white/50 truncate flex items-center gap-1">
                                 {activeGroup?.type === 'duo' ? (
-                                    <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>POV: {dbChars.find((c: any) => c.id === activeGroup.defaultPovChar)?.name}</>
+                                    <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>POV: {activeLimeChars.find((c: any) => c.id === activeGroup.defaultPovChar)?.name}</>
                                 ) : (
                                     <>{activeGroup?.members.length} members • {activeGroup?.reality === 'au' ? 'AU World' : `T-${activeGroup?.timeline}`}</>
                                 )}
@@ -422,10 +468,17 @@ export const LimeInterface = ({
                             </div>
                             {activeGroup?.type === 'group' ? (
                                 <div className="p-4 grid grid-cols-4 gap-3">
-                                    {dbChars.map((c: any) => {
+                                    {(activeGroup?.pov === 'insider' ? activeLimeChars : dbChars).map((c: any) => {
                                         const isIn = activeGroup?.members.includes(c.id);
+                                        const isPlayer = c.id === 'user';
                                         return (
-                                            <button key={c.id} onClick={() => handleUpdateMembers(isIn ? (activeGroup?.members.filter(m => m !== c.id) || []) : [...(activeGroup?.members || []), c.id])} className={`flex flex-col items-center p-2 rounded-xl border transition-all ${isIn ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-200' : 'bg-white border-gray-100 opacity-50 grayscale'}`}>
+                                            <button
+                                                key={c.id}
+                                                disabled={isPlayer && activeGroup?.pov === 'insider'}
+                                                title={isPlayer ? 'Player / 玩家由 Actor 模式固定加入' : undefined}
+                                                onClick={() => handleUpdateMembers(isIn ? (activeGroup?.members.filter(m => m !== c.id) || []) : [...(activeGroup?.members || []), c.id])}
+                                                className={`flex flex-col items-center p-2 rounded-xl border transition-all ${isIn ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-200' : 'bg-white border-gray-100 opacity-50 grayscale'} ${isPlayer ? 'cursor-default' : ''}`}
+                                            >
                                                 <div className="text-2xl mb-1">{c.avatar}</div>
                                                 <span className="text-[9px] font-bold text-gray-600 truncate w-full text-center">{c.name}</span>
                                             </button>
@@ -437,11 +490,11 @@ export const LimeInterface = ({
                                     <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Current POV / 当前持机人</div>
 
                                     <div className="w-16 h-16 rounded-full border-4 border-[#32CC70] flex items-center justify-center text-3xl shadow-lg"
-                                        style={{ backgroundColor: dbChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.hex }}>
-                                        {dbChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.avatar}
+                                        style={{ backgroundColor: activeLimeChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.hex }}>
+                                        {activeLimeChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.avatar}
                                     </div>
                                     <span className="font-bold text-gray-800">
-                                        {dbChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.name}的手机
+                                        {activeLimeChars.find((c: any) => c.id === activeGroup?.defaultPovChar)?.name}的手机
                                     </span>
 
                                     <button
@@ -482,7 +535,7 @@ export const LimeInterface = ({
                             const text = typeof msg.content === 'string' ? msg.content : msg.content[0]?.text || "";
                             if (!text) return null;
 
-                            if (activeGroup.type === 'duo') {
+                            if (activeGroup.pov === 'outsider') {
                                 const cleanText = text.replace("(Director's Instruction: ", "").replace(")", "");
                                 return (
                                     <div key={i} className="group/msg flex justify-center animate-fade-in-up w-full my-2 relative">
@@ -530,7 +583,7 @@ export const LimeInterface = ({
                                         }
 
                                         const isPovOwner = chatObj.charId === activeGroup.defaultPovChar;
-                                        const charInfo = dbChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "User", avatar: "👤", hex: "#cccccc" };
+                                        const charInfo = activeLimeChars.find((c: any) => c.id === chatObj.charId) || { name: chatObj.charId || "User", avatar: "👤", hex: "#cccccc" };
 
                                         if (isPovOwner) {
                                             return (
